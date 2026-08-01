@@ -12,8 +12,20 @@ jest.mock('@/lib/prisma', () => ({
     organization: {
       findUnique: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
+
+jest.mock('@/utils/supabase/server', () => ({
+  createClient: jest.fn().mockResolvedValue({
+    auth: {
+      getUser: jest.fn().mockResolvedValue({ data: { user: null } }),
+    },
+  }),
+}));
+
 
 describe('TenantPage', () => {
   beforeEach(() => {

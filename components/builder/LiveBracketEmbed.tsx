@@ -2,19 +2,25 @@ import React from 'react';
 
 export interface LiveBracketEmbedProps {
   divisionName?: string;
+  tournamentName?: string;
+  division?: string;
   format?: string;
 }
 
 export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
-  divisionName = "Men's Doubles Open 4.5+",
+  divisionName,
+  tournamentName,
+  division,
   format = "Double Elimination",
 }) => {
+  const displayTitle = tournamentName || divisionName || division || "Men's Doubles Open 4.5+";
+
   return (
     <div id="brackets" className="my-6 rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl text-slate-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800 pb-4">
         <div>
           <span className="text-xs font-bold text-sky-400 uppercase tracking-widest">Live Tournament Bracket</span>
-          <h2 className="text-2xl font-bold text-white mt-1">{divisionName}</h2>
+          <h2 className="text-2xl font-bold text-white mt-1">{displayTitle}</h2>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium animate-pulse">
