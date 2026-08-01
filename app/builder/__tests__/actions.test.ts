@@ -1,12 +1,12 @@
 import { savePageLayout } from '../actions';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@/utils/supabase/server';
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    organization: {
+    user: {
       findUnique: jest.fn(),
-      create: jest.fn(),
     },
     page: {
       upsert: jest.fn(),
@@ -18,48 +18,84 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
 
+jest.mock('@/utils/supabase/server', () => ({
+  createClient: jest.fn(),
+}));
+
 describe('Builder Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('savePageLayout', () => {
-    it('creates organization if it does not exist and upserts page', async () => {
-      (prisma.organization.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.organization.create as jest.Mock).mockResolvedValue({ id: 'org-1', slug: 'new-org' });
+    it('saves page layout for authenticated user organization', async () => {
+      const mockSupabase = {
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: { email: 'admin@bayareapickleball.com' } },
+            error: null,
+          }),
+        },
+      };
+      (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-1',
+        email: 'admin@bayareapickleball.com',
+        organization: { id: 'org-1', slug: 'bay-area-pickleball' },
+      });
       (prisma.page.upsert as jest.Mock).mockResolvedValue({});
 
       const components = [{ type: 'HeroBanner' }];
-      const result = await savePageLayout('new-org', components);
+      const result = await savePageLayout(components);
 
-      expect(prisma.organization.findUnique).toHaveBeenCalledWith({ where: { slug: 'new-org' } });
-      expect(prisma.organization.create).toHaveBeenCalledTimes(1);
+      expect(createClient).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { email: 'admin@bayareapickleball.com' },
+        include: { organization: true },
+      });
       expect(prisma.page.upsert).toHaveBeenCalledTimes(1);
-      expect(revalidatePath).toHaveBeenCalledWith('/tenant/new-org');
+      expect(revalidatePath).toHaveBeenCalledWith('/tenant/bay-area-pickleball');
       expect(result.success).toBe(true);
     });
 
-    it('uses existing organization and upserts page', async () => {
-      (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: 'org-1', slug: 'existing-org' });
-      (prisma.page.upsert as jest.Mock).mockResolvedValue({});
+    it('returns error if user is unauthenticated', async () => {
+      const mockSupabase = {
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: null },
+            error: new Error('Auth error'),
+          }),
+        },
+      };
+      (createClient as jest.Mock).mockResolvedValue(mockSupabase);
 
-      const components = [{ type: 'LiveBracketEmbed' }];
-      const result = await savePageLayout('existing-org', components);
-
-      expect(prisma.organization.findUnique).toHaveBeenCalledWith({ where: { slug: 'existing-org' } });
-      expect(prisma.organization.create).not.toHaveBeenCalled();
-      expect(prisma.page.upsert).toHaveBeenCalledTimes(1);
-      expect(revalidatePath).toHaveBeenCalledWith('/tenant/existing-org');
-      expect(result.success).toBe(true);
-    });
-
-    it('returns error if database operation fails', async () => {
-      (prisma.organization.findUnique as jest.Mock).mockRejectedValue(new Error('DB connection failed'));
-
-      const result = await savePageLayout('error-org', []);
+      const result = await savePageLayout([]);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('DB connection failed');
+      expect(result.error).toBe('Unauthorized');
+    });
+
+    it('returns error if user has no organization', async () => {
+      const mockSupabase = {
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: { email: 'noorg@test.com' } },
+            error: null,
+          }),
+        },
+      };
+      (createClient as jest.Mock).mockResolvedValue(mockSupabase);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-2',
+        email: 'noorg@test.com',
+        organization: null,
+      });
+
+      const result = await savePageLayout([]);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('User is not assigned to an organization');
     });
   });
 });

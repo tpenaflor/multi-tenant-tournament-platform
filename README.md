@@ -53,31 +53,30 @@ npm install
 
 ---
 
-### Step 3: Configure Environment Variables
+### Step 3: Start Local Supabase & Configure Environment
 
-Create a `.env` file in the root directory:
+> ⚡ **Important**: For local development and testing, **always force the use of local Supabase** (`npx supabase start`). Running Supabase locally simplifies the authentication process, auto-provisions local JWT keys, and provides instant local database connectivity on port `54322` and API/Auth on `54321`.
+
+Start your local Supabase stack:
+
+```bash
+npx supabase start
+```
+
+Create a `.env` file in the root directory (or copy `.env.example`):
 
 ```bash
 cp .env.example .env
 ```
 
-Or manually create `.env` with the following variables:
+Ensure your `.env` points to your local Supabase environment:
 
 ```env
-# Database Connection String (PostgreSQL / Supabase)
-DATABASE_URL="postgresql://postgres:your-password@db.your-supabase-project.supabase.co:5432/postgres"
-
-# Supabase Credentials
-NEXT_PUBLIC_SUPABASE_URL="https://your-supabase-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+# Local Supabase Database & Auth (Mandatory for local testing)
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:54321"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"
 ```
-
-> **Note**: For local development with Supabase CLI (`npx supabase start`), your `.env` values will typically look like:
-> ```env
-> DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-> NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:54321"
-> NEXT_PUBLIC_SUPABASE_ANON_KEY="sb_publishable_..."
-> ```
 
 ---
 

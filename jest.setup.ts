@@ -4,6 +4,17 @@ import { TextEncoder, TextDecoder } from 'util'
 // Polyfill for encoding which isn't present in jsdom
 Object.assign(global, { TextDecoder, TextEncoder })
 
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  cookies: jest.fn(() => ({
+    get: jest.fn(),
+    set: jest.fn(),
+    delete: jest.fn(),
+    getAll: jest.fn(() => []),
+  })),
+}))
+
+
 // Mock ResizeObserver
 if (typeof window !== 'undefined') {
   class ResizeObserver {
