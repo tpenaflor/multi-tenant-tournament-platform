@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import BuilderClient from '../BuilderClient';
+import { ComponentItem } from '@/components/builder/ComponentRegistry';
 import * as actions from '../actions';
 
 // Mock the actions
@@ -9,7 +10,7 @@ jest.mock('../actions', () => ({
 }));
 
 describe('BuilderClient', () => {
-  const initialComponents = [
+  const initialComponents: ComponentItem[] = [
     {
       id: 'comp-1',
       type: 'HeroBanner',

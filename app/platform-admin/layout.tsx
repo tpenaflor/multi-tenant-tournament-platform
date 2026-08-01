@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -27,7 +28,7 @@ export default async function PlatformAdminLayout({ children }: { children: Reac
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold tracking-tight">Platform Admin Dashboard</h1>
           <div className="flex items-center gap-4">
-            <a href="/" className="text-sm text-slate-300 hover:text-white transition-colors">Back to Main Site</a>
+            <Link href="/" className="text-sm text-slate-300 hover:text-white transition-colors">Back to Main Site</Link>
             <form action={logout}>
               <button type="submit" className="text-sm px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors">
                 Logout

@@ -27,6 +27,12 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
       - name: Run unit & integration tests
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:54322/postgres"
