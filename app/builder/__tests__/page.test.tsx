@@ -7,6 +7,7 @@ import * as actions from '../actions';
 // Mock the actions
 jest.mock('../actions', () => ({
   savePageLayout: jest.fn(),
+  generateAiComponentAction: jest.fn(),
 }));
 
 describe('BuilderClient', () => {
@@ -73,6 +74,16 @@ describe('BuilderClient', () => {
     fireEvent.click(addHeroBannerBtn!);
 
     expect(screen.getByText(/Live Interactive Page Canvas/)).toHaveTextContent('5 components');
+  });
+
+  it('adds an AI Custom Component from sidebar', () => {
+    render(<BuilderClient initialComponents={initialComponents} tenantSlug="bay-area-pickleball" />);
+    
+    const addAiBtn = screen.getByText('✨ AI Custom Component').closest('button');
+    fireEvent.click(addAiBtn!);
+
+    expect(screen.getByText(/Live Interactive Page Canvas/)).toHaveTextContent('5 components');
+    expect(screen.getByText(/Prompt your custom component/i)).toBeInTheDocument();
   });
 
   it('selects a component and shows it in the CMS editor', () => {

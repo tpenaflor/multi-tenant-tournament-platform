@@ -19,8 +19,9 @@ import {
 import { ComponentItem, renderBuilderComponent } from '@/components/builder/ComponentRegistry';
 import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
-import { savePageLayout } from './actions';
+import { savePageLayout, generateAiComponentAction } from './actions';
 import { logout } from '@/app/login/actions';
+import { isAiComponentEnabled } from '@/lib/featureFlags';
 
 interface BuilderClientProps {
   initialComponents: ComponentItem[];
@@ -37,6 +38,12 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const [isSaving, setIsSaving] = useState(false);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
+
+  const showAiComponent = isAiComponentEnabled();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -106,6 +113,42 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           : c
       )
     );
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImageBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleGenerateAi = async (promptText: string) => {
+    if (!selectedComponentId) return;
+    setIsGeneratingAi(true);
+    setAiError(null);
+    const response = await generateAiComponentAction(promptText, selectedImageBase64 || undefined);
+    setIsGeneratingAi(false);
+    if (response.success && response.htmlContent) {
+      setComponents((prev) =>
+        prev.map((c) =>
+          c.id === selectedComponentId
+            ? {
+                ...c,
+                props: {
+                  ...c.props,
+                  prompt: promptText,
+                  htmlContent: response.htmlContent,
+                },
+              }
+            : c
+        )
+      );
+    } else {
+      setAiError(response.error || 'Failed to generate component');
+    }
   };
 
   return (
@@ -243,6 +286,21 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                     <div className="text-xs text-slate-400">Parking & Facility rules</div>
                   </div>
                   <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
+                </button>
+              )}
+
+              {showAiComponent && (
+                <button
+                  onClick={() => addComponent('AIDynamicBlock')}
+                  className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-sky-900/40 to-indigo-900/40 hover:from-sky-800/60 hover:to-indigo-800/60 border border-sky-500/40 transition-all group flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-semibold text-sm text-sky-300 group-hover:text-white flex items-center gap-1.5">
+                      <span>✨ AI Custom Component</span>
+                    </div>
+                    <div className="text-xs text-slate-400">Prompt or upload screenshot</div>
+                  </div>
+                  <PlusIcon size={16} className="text-sky-400 group-hover:text-white" />
                 </button>
               )}
               </div>
@@ -455,6 +513,90 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       onChange={(e) => updateSelectedComponentProp('description', e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
                     />
+                  </div>
+                </div>
+              )}
+
+              {selectedComponent.type === 'AIDynamicBlock' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-sky-400 mb-1">AI Prompt</label>
+                    <textarea
+                      value={selectedComponent.props.prompt || ''}
+                      onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
+                      placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-20 resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-sky-400 mb-1">
+                      Reference Image / Wireframe (Vision Input)
+                    </label>
+                    {selectedImageBase64 ? (
+                      <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-slate-950 p-2 group">
+                        <img
+                          src={selectedImageBase64}
+                          alt="Reference visual layout"
+                          className="w-full h-28 object-cover rounded-md"
+                        />
+                        <button
+                          onClick={() => setSelectedImageBase64(null)}
+                          className="absolute top-3 right-3 bg-red-500/90 text-white p-1 rounded-full hover:bg-red-600 transition-all text-xs w-6 h-6 flex items-center justify-center font-bold"
+                          title="Remove reference image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="text-xs font-semibold text-slate-300">🖼️ Upload screenshot / wireframe</span>
+                          <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP</span>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleGenerateAi(selectedComponent.props.prompt || '')}
+                    disabled={isGeneratingAi || (!selectedComponent.props.prompt && !selectedImageBase64)}
+                    className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>✨</span>
+                    {isGeneratingAi ? 'Generating UI...' : 'Generate with AI'}
+                  </button>
+                  {aiError && (
+                    <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 p-2 rounded-lg">
+                      {aiError}
+                    </div>
+                  )}
+                  <div className="pt-2 border-t border-slate-800 space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Section Title (Optional)</label>
+                      <input
+                        type="text"
+                        value={selectedComponent.props.title || ''}
+                        onChange={(e) => updateSelectedComponentProp('title', e.target.value)}
+                        placeholder="e.g. Official Prize Pool"
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Raw HTML Content</label>
+                      <textarea
+                        value={selectedComponent.props.htmlContent || ''}
+                        onChange={(e) => updateSelectedComponentProp('htmlContent', e.target.value)}
+                        placeholder="Generated HTML content will appear here..."
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-300 focus:outline-none focus:border-sky-500 h-32 resize-y"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

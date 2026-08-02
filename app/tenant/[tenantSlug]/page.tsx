@@ -95,7 +95,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
     return (
       <main className="min-h-screen bg-slate-950 text-slate-100 p-8">
         <div className="max-w-5xl mx-auto space-y-4">
-          {components.map((comp) => renderBuilderComponent(comp, { tournaments, basePath }))}
+          {components.map((comp) => renderBuilderComponent(comp, { tournaments, tenantName: org.name, basePath }))}
         </div>
         {isOwner && (
           <a href="/builder" className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold shadow-xl shadow-sky-500/20 transition-transform hover:scale-105">
