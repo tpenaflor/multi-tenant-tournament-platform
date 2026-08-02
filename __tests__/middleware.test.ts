@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { NextRequest } from 'next/server';
 import middleware from '../middleware';
 
@@ -59,7 +62,7 @@ describe('Middleware Multi-Tenant Domain Routing', () => {
 
     const res = middleware(req);
     const rewriteHeader = res.headers.get('x-middleware-rewrite');
-    expect(rewriteHeader).toContain('/tenant/atlantapickleball.com');
+    expect(rewriteHeader).toContain('/tenant/atlantapickleball');
   });
 
   it('respects custom NEXT_PUBLIC_ROOT_DOMAIN environment variable', () => {

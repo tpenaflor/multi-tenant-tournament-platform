@@ -1,8 +1,14 @@
 import '@testing-library/jest-dom'
 import { TextEncoder, TextDecoder } from 'util'
 
-// Polyfill for encoding which isn't present in jsdom
-Object.assign(global, { TextDecoder, TextEncoder })
+// Polyfill for encoding and web APIs which aren't present in jsdom
+Object.assign(global, {
+  TextDecoder,
+  TextEncoder,
+  Request: globalThis.Request || global.Request,
+  Response: globalThis.Response || global.Response,
+  Headers: globalThis.Headers || global.Headers,
+})
 
 // Mock next/headers
 jest.mock('next/headers', () => ({
@@ -12,6 +18,7 @@ jest.mock('next/headers', () => ({
     delete: jest.fn(),
     getAll: jest.fn(() => []),
   })),
+  headers: jest.fn(() => Promise.resolve(new Map([['host', 'localhost:3000']]))),
 }))
 
 

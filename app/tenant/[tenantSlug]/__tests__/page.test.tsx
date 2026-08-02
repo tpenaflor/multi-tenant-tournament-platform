@@ -16,6 +16,9 @@ jest.mock('@/lib/prisma', () => ({
     user: {
       findUnique: jest.fn(),
     },
+    tournament: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
   },
 }));
 

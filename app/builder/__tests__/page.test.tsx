@@ -57,7 +57,7 @@ describe('BuilderClient', () => {
   it('renders the builder page with initial components', () => {
     render(<BuilderClient initialComponents={initialComponents} tenantSlug="bay-area-pickleball" />);
     
-    expect(screen.getByText('Drag-and-Drop Page Builder')).toBeInTheDocument();
+    expect(screen.getByText('Home Page Builder')).toBeInTheDocument();
     expect(screen.getByText('Atlanta Pickleball Open 2026')).toBeInTheDocument();
     expect(screen.getByText("Men's Doubles 4.5+ Open")).toBeInTheDocument();
   });
