@@ -14,9 +14,14 @@ export default async function TenantPage({ params }: TenantPageProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Fetch the layout for this tenant from the database
-  const org = await prisma.organization.findUnique({
-    where: { slug: tenantSlug },
+  // Fetch the layout for this tenant from the database (matching slug or custom domain)
+  const org = await prisma.organization.findFirst({
+    where: {
+      OR: [
+        { slug: tenantSlug },
+        { customDomain: tenantSlug },
+      ],
+    },
   });
 
   let isOwner = false;

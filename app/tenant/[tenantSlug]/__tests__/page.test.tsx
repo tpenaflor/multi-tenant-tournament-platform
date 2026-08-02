@@ -10,6 +10,7 @@ jest.mock('@/lib/prisma', () => ({
       findFirst: jest.fn(),
     },
     organization: {
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
     },
     user: {
@@ -33,7 +34,7 @@ describe('TenantPage', () => {
   });
 
   it('renders fallback state when no page components found', async () => {
-    (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: 'org-1', isActive: true });
+    (prisma.organization.findFirst as jest.Mock).mockResolvedValue({ id: 'org-1', isActive: true });
     (prisma.page.findFirst as jest.Mock).mockResolvedValue(null);
 
     const params = Promise.resolve({ tenantSlug: 'test-tenant' });
@@ -48,7 +49,7 @@ describe('TenantPage', () => {
   });
 
   it('renders offline message when organization is inactive', async () => {
-    (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: 'org-1', isActive: false });
+    (prisma.organization.findFirst as jest.Mock).mockResolvedValue({ id: 'org-1', isActive: false });
 
     const params = Promise.resolve({ tenantSlug: 'test-tenant' });
     
@@ -60,7 +61,7 @@ describe('TenantPage', () => {
   });
 
   it('renders not found when organization does not exist', async () => {
-    (prisma.organization.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.organization.findFirst as jest.Mock).mockResolvedValue(null);
 
     const params = Promise.resolve({ tenantSlug: 'test-tenant' });
     
@@ -75,7 +76,7 @@ describe('TenantPage', () => {
       { id: '1', type: 'HeroBanner', props: { title: 'Dynamic Tenant Title' } }
     ];
 
-    (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: 'org-1', isActive: true });
+    (prisma.organization.findFirst as jest.Mock).mockResolvedValue({ id: 'org-1', isActive: true });
 
     (prisma.page.findFirst as jest.Mock).mockResolvedValue({
       id: 'page-1',
