@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 
 export interface LiveBracketEmbedProps {
   divisionName?: string;
@@ -13,6 +15,7 @@ export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
   division,
   format = "Double Elimination",
 }) => {
+  const [activeTab, setActiveTab] = useState<'all' | 'qf' | 'sf' | 'gf'>('all');
   const displayTitle = tournamentName || divisionName || division || "Men's Doubles Open 4.5+";
 
   return (
@@ -32,11 +35,19 @@ export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
         </div>
       </div>
 
+      {/* Mobile Round Navigation Tabs */}
+      <div className="md:hidden flex overflow-x-auto gap-2 mb-4 pb-2 border-b border-slate-800 scrollbar-hide">
+        <button onClick={() => setActiveTab('all')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'all' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}>All Rounds</button>
+        <button onClick={() => setActiveTab('qf')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'qf' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}>Quarterfinals</button>
+        <button onClick={() => setActiveTab('sf')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'sf' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}>Semifinals</button>
+        <button onClick={() => setActiveTab('gf')} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'gf' ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}>Grand Finals</button>
+      </div>
+
       {/* Bracket Tree Visual Simulation */}
       <div className="overflow-x-auto pb-4">
-        <div className="flex items-center gap-8 min-w-[700px] p-2">
+        <div className={`flex items-start md:items-center gap-8 p-2 ${activeTab === 'all' ? 'min-w-[700px]' : 'w-full md:min-w-[700px]'}`}>
           {/* Quarterfinals */}
-          <div className="space-y-6 w-56">
+          <div className={`space-y-6 w-full md:w-56 shrink-0 ${activeTab === 'all' || activeTab === 'qf' ? 'block' : 'hidden md:block'}`}>
             <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Quarterfinals</div>
             <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1.5 shadow-md">
               <div className="flex justify-between items-center text-sm font-semibold text-white">
@@ -61,7 +72,7 @@ export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
           </div>
 
           {/* Semifinals */}
-          <div className="space-y-12 w-56">
+          <div className={`space-y-12 w-full md:w-56 shrink-0 ${activeTab === 'all' || activeTab === 'sf' ? 'block' : 'hidden md:block'}`}>
             <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Semifinals</div>
             <div className="p-3 bg-slate-800/90 rounded-xl border border-sky-500/40 space-y-1.5 shadow-lg">
               <div className="flex justify-between items-center text-sm font-semibold text-white">
@@ -76,7 +87,7 @@ export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
           </div>
 
           {/* Finals */}
-          <div className="w-56">
+          <div className={`w-full md:w-56 shrink-0 ${activeTab === 'all' || activeTab === 'gf' ? 'block' : 'hidden md:block'}`}>
             <div className="text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">Grand Finals 🏆</div>
             <div className="p-4 bg-gradient-to-br from-slate-800 to-sky-950 rounded-xl border-2 border-sky-400 space-y-2 shadow-2xl">
               <div className="text-xs text-sky-300 font-bold uppercase">Championship Match</div>

@@ -88,16 +88,16 @@ export default async function DashboardPage() {
 
           return (
           <div key={t.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl space-y-4 relative group">
-             <div className="absolute top-4 right-4 flex items-start gap-2">
-               <div className="flex flex-col items-end gap-1">
-                 <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded border ${
+             <div className="flex justify-between sm:absolute sm:top-4 sm:right-4 items-start gap-2 mb-4 sm:mb-0">
+               <div className="flex flex-col sm:items-end gap-1">
+                 <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded border inline-block ${
                    t.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 
                    t.status === 'DRAFT' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' :
                    'bg-slate-800 text-slate-300 border-slate-700'
                  }`}>
                    Tourn: {t.status}
                  </span>
-                 <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded border ${
+                 <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded border inline-block ${
                    pageStatus === 'Live' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 
                    pageStatus === 'Draft' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' :
                    'bg-slate-800 text-slate-300 border-slate-700'
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
                <div className="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                  <TrophyIcon size={14} /> {t.sport}
                </div>
-               <h3 className="text-xl font-bold text-white mb-2 pr-16">{t.name}</h3>
+               <h3 className="text-xl font-bold text-white mb-2 sm:pr-20">{t.name}</h3>
                <p className="text-sm text-slate-400">{t.format}</p>
              </div>
              
