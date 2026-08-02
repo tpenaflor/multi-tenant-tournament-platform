@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin, supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
 // In a real app with Supabase Auth, you'd check the user's role here
@@ -18,15 +18,26 @@ export async function addOrganization(data: { name: string; slug: string }) {
   const email = `admin@${data.slug}.com`;
   const defaultPassword = 'Password123!';
 
-  // Create the user in Supabase Auth
-  const { error: authError } = await supabase.auth.signUp({
-    email,
-    password: defaultPassword,
-  });
+  // Create the user in Supabase Auth using Admin API if service role key is available, fallback to signUp
+  let authError = null;
+  try {
+    const { error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: defaultPassword,
+      email_confirm: true,
+    });
+    authError = error;
+  } catch (err) {
+    // Fallback to signUp if admin API is not supported with current key
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: defaultPassword,
+    });
+    authError = error;
+  }
 
-  if (authError) {
+  if (authError && !authError.message.includes('already registered')) {
     console.error('Failed to create Supabase auth user:', authError);
-    // Depending on your requirements, you might want to throw here
   }
 
   const org = await prisma.organization.create({
