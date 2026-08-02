@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 
 export async function login(formData: FormData) {
-  const email = formData.get('email') as string;
+  const rawEmail = formData.get('email') as string;
+  const email = rawEmail?.toLowerCase().trim() || '';
   const password = formData.get('password') as string;
 
   const supabase = await createClient();

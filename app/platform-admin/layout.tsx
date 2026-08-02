@@ -8,14 +8,14 @@ import { SettingsIcon } from '@/components/ui/icons';
 
 export default async function PlatformAdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user: authUser }, error } = await supabase.auth.getUser();
   
-  if (!session?.user?.email) {
+  if (error || !authUser?.email) {
     redirect('/login');
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email }
+    where: { email: authUser.email.toLowerCase() }
   });
 
   if (user?.role !== 'PLATFORM_ADMIN') {

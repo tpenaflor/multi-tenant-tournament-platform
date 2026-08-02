@@ -1,8 +1,24 @@
 import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 
 const prisma = new PrismaClient()
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mock-anon-key'
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
 async function main() {
+  const defaultPassword = 'Password123!'
+
+  // Seed Supabase Auth Accounts
+  const seedEmails = ['admin@bracket.sports', 'organizer@demo.com']
+  for (const email of seedEmails) {
+    const { error } = await supabase.auth.signUp({ email, password: defaultPassword })
+    if (error && !error.message.includes('already registered')) {
+      console.log(`Supabase auth signup for ${email}: ${error.message}`)
+    }
+  }
+
   // 1. Create Platform Admin
   const platformAdmin = await prisma.user.upsert({
     where: { email: 'admin@bracket.sports' },
