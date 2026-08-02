@@ -39,6 +39,10 @@ export async function login(formData: FormData) {
     }
   }
 
+  if (!user) {
+    return redirect('/login?error=User%20profile%20not%20found%20in%20database');
+  }
+
   return redirect('/');
 }
 

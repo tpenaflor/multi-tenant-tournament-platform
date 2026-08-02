@@ -38,10 +38,27 @@ export default function middleware(req: NextRequest) {
     `www.${rootDomain}`,
   ]);
 
-  // Check if current hostname is a main platform domain
-  const isMainDomain = mainDomains.has(host) || mainDomains.has(hostWithoutPort);
+  // System paths that should ALWAYS be served directly on main platform logic
+  const isSystemPath = 
+    url.pathname.startsWith('/platform-admin') ||
+    url.pathname.startsWith('/login') ||
+    url.pathname.startsWith('/dashboard') ||
+    url.pathname.startsWith('/builder') ||
+    url.pathname.startsWith('/settings') ||
+    url.pathname.startsWith('/tenant');
 
-  if (isMainDomain) {
+  const isTenantSubdomain = !!(rootDomain && hostWithoutPort.endsWith(`.${rootDomain}`));
+
+  // Check if current hostname is a main platform domain
+  const isMainDomain = 
+    !isTenantSubdomain && (
+      mainDomains.has(host) || 
+      mainDomains.has(hostWithoutPort) ||
+      hostWithoutPort.endsWith('.vercel.app') ||
+      hostWithoutPort.endsWith('.vercel.dev')
+    );
+
+  if (isMainDomain || isSystemPath) {
     return NextResponse.next();
   }
 

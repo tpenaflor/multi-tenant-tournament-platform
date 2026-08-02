@@ -80,4 +80,13 @@ describe('Middleware Multi-Tenant Domain Routing', () => {
     const resTenant = middleware(reqTenant);
     expect(resTenant.headers.get('x-middleware-rewrite')).toContain('/tenant/atlanta');
   });
+
+  it('allows system paths like /platform-admin and /login on custom domains without rewriting to tenant path', () => {
+    const req = new NextRequest('https://atlantapickleball.com/platform-admin', {
+      headers: { host: 'atlantapickleball.com' },
+    });
+
+    const res = middleware(req);
+    expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+  });
 });
