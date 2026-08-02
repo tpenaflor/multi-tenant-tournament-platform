@@ -21,6 +21,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
       OR: [
         { slug: tenantSlug },
         { customDomain: tenantSlug },
+        ...(tenantSlug.includes('.') ? [] : [{ customDomain: { startsWith: `${tenantSlug}.` } }]),
       ],
     },
   });
@@ -86,7 +87,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
     const host = headersList.get('host') || '';
     const hostWithoutPort = host.split(':')[0];
     const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'multi-tenant-tournament-platform.vercel.app').toLowerCase().split(':')[0];
-    const mainDomains = new Set(['localhost', 'localhost:3000', '127.0.0.1', '127.0.0.1:3000', 'bracketsports.com', 'www.bracketsports.com', rootDomain, `www.${rootDomain}`]);
+    const mainDomains = new Set(['localhost', 'localhost:3000', '127.0.0.1', '127.0.0.1:3000', 'bracketsports.com', 'www.bracketsports.com', 'tron-solutions.cc', 'www.tron-solutions.cc', 'tron-solution.cc', 'www.tron-solution.cc', rootDomain, `www.${rootDomain}`]);
     const isMainDomain = mainDomains.has(host) || mainDomains.has(hostWithoutPort);
     
     const basePath = isMainDomain ? `/tenant/${tenantSlug}` : '';

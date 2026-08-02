@@ -34,6 +34,10 @@ export default function middleware(req: NextRequest) {
     '127.0.0.1:3000',
     'bracketsports.com',
     'www.bracketsports.com',
+    'tron-solutions.cc',
+    'www.tron-solutions.cc',
+    'tron-solution.cc',
+    'www.tron-solution.cc',
     rootDomain,
     `www.${rootDomain}`,
   ]);

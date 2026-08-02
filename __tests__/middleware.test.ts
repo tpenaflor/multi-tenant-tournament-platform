@@ -35,6 +35,16 @@ describe('Middleware Multi-Tenant Domain Routing', () => {
     expect(res.headers.get('x-middleware-rewrite')).toBeNull();
   });
 
+  it('allows production root domains (tron-solutions.cc and tron-solution.cc)', () => {
+    for (const host of ['tron-solutions.cc', 'www.tron-solutions.cc', 'tron-solution.cc', 'www.tron-solution.cc']) {
+      const req = new NextRequest(`https://${host}/`, {
+        headers: { host },
+      });
+      const res = middleware(req);
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+    }
+  });
+
   it('rewrites Vercel tenant subdomain (demo-tenant.multi-tenant-tournament-platform.vercel.app)', () => {
     const req = new NextRequest('https://demo-tenant.multi-tenant-tournament-platform.vercel.app/', {
       headers: { host: 'demo-tenant.multi-tenant-tournament-platform.vercel.app' },

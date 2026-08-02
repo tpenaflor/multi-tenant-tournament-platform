@@ -21,6 +21,7 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
       OR: [
         { slug: tenantSlug },
         { customDomain: tenantSlug },
+        ...(tenantSlug.includes('.') ? [] : [{ customDomain: { startsWith: `${tenantSlug}.` } }]),
       ],
     },
   });
