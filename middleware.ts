@@ -51,15 +51,13 @@ export default function middleware(req: NextRequest) {
     url.pathname.startsWith('/settings') ||
     url.pathname.startsWith('/tenant');
 
-  const isTenantSubdomain = !!(rootDomain && hostWithoutPort.endsWith(`.${rootDomain}`));
-
-  // Check if current hostname is a main platform domain
+  // Check if current hostname is explicitly a main platform domain
   const isMainDomain = 
-    !isTenantSubdomain && (
-      mainDomains.has(host) || 
-      mainDomains.has(hostWithoutPort) ||
-      hostWithoutPort.endsWith('.vercel.app') ||
-      hostWithoutPort.endsWith('.vercel.dev')
+    mainDomains.has(host) || 
+    mainDomains.has(hostWithoutPort) ||
+    (
+      (hostWithoutPort.endsWith('.vercel.app') || hostWithoutPort.endsWith('.vercel.dev')) &&
+      !hostWithoutPort.endsWith(`.${rootDomain}`)
     );
 
   if (isMainDomain || isSystemPath) {
@@ -78,9 +76,16 @@ export default function middleware(req: NextRequest) {
     tenantSlug = hostWithoutPort.substring(0, hostWithoutPort.length - rootDomain.length - 1);
   } else if (hostWithoutPort.endsWith('.localhost')) {
     tenantSlug = hostWithoutPort.substring(0, hostWithoutPort.length - '.localhost'.length);
+  } else if (hostWithoutPort.startsWith('www.')) {
+    tenantSlug = hostWithoutPort.substring(4).split('.')[0];
   } else if (hostWithoutPort.includes('.')) {
     // If it's a subdomain of something else, take first part
     tenantSlug = hostWithoutPort.split('.')[0];
+  }
+
+  // Safety check: 'www' or empty string is never a valid tenant
+  if (!tenantSlug || tenantSlug === 'www') {
+    return NextResponse.next();
   }
 
   // Rewrite request URL to /tenant/[tenantSlug]/[path] internally without changing browser URL bar
