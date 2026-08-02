@@ -21,13 +21,13 @@ export default async function DashboardPage() {
   }
 
   const tournaments = await prisma.tournament.findMany({
-    where: { organizationId: dbUser.organizationId },
+    where: { organizationId: dbUser.organizationId! },
     orderBy: { createdAt: 'desc' }
   });
 
   const pages = await prisma.page.findMany({
     where: {
-      organizationId: dbUser.organizationId,
+      organizationId: dbUser.organizationId!,
       slug: { in: tournaments.map(t => t.id) }
     }
   });

@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { updatePassword, updateProfile } from './actions';
 import { CheckCircleIcon } from '@/components/ui/icons';
 
-export default async function SettingsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
+export default async function SettingsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const searchParams = await props.searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -75,7 +74,7 @@ export default async function SettingsPage({
                 type="text"
                 id="name"
                 name="name"
-                defaultValue={dbUser.name}
+                defaultValue={dbUser.name || ''}
                 required
                 className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all placeholder-slate-600"
               />
