@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 
-export async function savePageLayout(components: any[]) {
+export async function savePageLayout(components: any[], tournamentId?: string) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -24,21 +24,22 @@ export async function savePageLayout(components: any[]) {
     }
 
     const org = dbUser.organization;
+    const slug = tournamentId || '/';
 
     // Upsert the page for this organization
     await prisma.page.upsert({
       where: {
         organizationId_slug: {
           organizationId: org.id,
-          slug: '/',
+          slug,
         },
       },
       update: {
         components: JSON.stringify(components),
       },
       create: {
-        title: 'Home Page',
-        slug: '/',
+        title: tournamentId ? 'Tournament Page' : 'Home Page',
+        slug,
         organizationId: org.id,
         components: JSON.stringify(components),
         published: true,

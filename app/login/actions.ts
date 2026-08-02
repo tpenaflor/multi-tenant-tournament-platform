@@ -34,9 +34,7 @@ export async function login(formData: FormData) {
       where: { id: user.organizationId },
     });
     if (org) {
-      // NOTE: Normally you'd redirect to a dedicated dashboard. 
-      // For now, redirecting to the builder page or the tenant page.
-      return redirect(`/builder`);
+      return redirect(`/dashboard`);
     }
   }
 

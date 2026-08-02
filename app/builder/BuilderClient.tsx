@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ComponentItem, renderBuilderComponent } from '@/components/builder/ComponentRegistry';
-import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from '@/components/ui/icons';
+import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
 import { savePageLayout } from './actions';
 import { logout } from '@/app/login/actions';
@@ -25,9 +25,12 @@ import { logout } from '@/app/login/actions';
 interface BuilderClientProps {
   initialComponents: ComponentItem[];
   tenantSlug: string;
+  tournamentId?: string;
+  tournamentSlug?: string;
+  tournaments?: any[];
 }
 
-export default function BuilderClient({ initialComponents, tenantSlug }: BuilderClientProps) {
+export default function BuilderClient({ initialComponents, tenantSlug, tournamentId, tournamentSlug, tournaments }: BuilderClientProps) {
   const [components, setComponents] = useState<ComponentItem[]>(initialComponents);
 
   const [savedStatus, setSavedStatus] = useState<string | null>(null);
@@ -80,7 +83,7 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
     setIsSaving(true);
     setSavedStatus(null);
     
-    const response = await savePageLayout(components);
+    const response = await savePageLayout(components, tournamentId);
     
     setIsSaving(false);
     if (response.success) {
@@ -111,15 +114,23 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
       <header className="h-16 border-b border-slate-800 bg-slate-900/90 px-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-black text-slate-950">
-            B
+            <PaintbrushIcon size={18} />
           </div>
           <div>
-            <h1 className="font-bold text-white text-base leading-none">Drag-and-Drop Page Builder</h1>
+            <h1 className="font-bold text-white text-base leading-none">
+              {tournamentId ? 'Tournament Page Builder' : 'Home Page Builder'}
+            </h1>
             <span className="text-xs text-slate-400">Tenant Workspace ({tenantSlug})</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href="/dashboard"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium transition-all mr-2"
+          >
+            ← Back to Dashboard
+          </a>
           {savedStatus && (
             <div className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${savedStatus.includes('Error') ? 'text-red-400 bg-red-500/10 border border-red-500/30' : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/30'}`}>
               <CheckCircleIcon size={14} />
@@ -127,7 +138,7 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
             </div>
           )}
           <a
-            href={`/tenant/${tenantSlug}`}
+            href={tournamentSlug ? `/tenant/${tenantSlug}/tournaments/${tournamentSlug}` : `/tenant/${tenantSlug}`}
             target="_blank"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 transition-all"
           >
@@ -185,16 +196,31 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
                 <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
               </button>
 
-              <button
-                onClick={() => addComponent('LiveBracketEmbed')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-semibold text-sm text-white group-hover:text-sky-400">Live Bracket</div>
-                  <div className="text-xs text-slate-400">Interactive bracket tree</div>
-                </div>
-                <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-              </button>
+              {!tournamentId && (
+                <button
+                  onClick={() => addComponent('TournamentList')}
+                  className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-semibold text-sm text-white group-hover:text-sky-400">Tournament List</div>
+                    <div className="text-xs text-slate-400">Active & upcoming events</div>
+                  </div>
+                  <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
+                </button>
+              )}
+
+              {tournamentId && (
+                <button
+                  onClick={() => addComponent('LiveBracketEmbed')}
+                  className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-semibold text-sm text-white group-hover:text-sky-400">Live Bracket</div>
+                    <div className="text-xs text-slate-400">Interactive bracket tree</div>
+                  </div>
+                  <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
+                </button>
+              )}
 
               <button
                 onClick={() => addComponent('SponsorGrid')}
@@ -207,16 +233,18 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
                 <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
               </button>
 
-              <button
-                onClick={() => addComponent('LocationLogistics')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-semibold text-sm text-white group-hover:text-sky-400">Location & Venue</div>
-                  <div className="text-xs text-slate-400">Parking & Facility rules</div>
-                </div>
-                <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-              </button>
+              {tournamentId && (
+                <button
+                  onClick={() => addComponent('LocationLogistics')}
+                  className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-semibold text-sm text-white group-hover:text-sky-400">Location & Venue</div>
+                    <div className="text-xs text-slate-400">Parking & Facility rules</div>
+                  </div>
+                  <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
+                </button>
+              )}
               </div>
             </div>
           ) : (
@@ -264,7 +292,7 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
 
                       {/* Render Component */}
                       <div className="pointer-events-none">
-                        {renderBuilderComponent(comp)}
+                        {renderBuilderComponent(comp, { tournaments, basePath: `/tenant/${tenantSlug}` })}
                       </div>
                     </div>
                   </SortableItem>
@@ -402,6 +430,29 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
                       type="text"
                       value={selectedComponent.props.address || ''}
                       onChange={(e) => updateSelectedComponentProp('address', e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedComponent.type === 'TournamentList' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={selectedComponent.props.title || ''}
+                      onChange={(e) => updateSelectedComponentProp('title', e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                    <input
+                      type="text"
+                      value={selectedComponent.props.description || ''}
+                      onChange={(e) => updateSelectedComponentProp('description', e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
                     />
                   </div>

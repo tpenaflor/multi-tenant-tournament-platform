@@ -3,7 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
 import BuilderClient from './BuilderClient';
 
-export default async function BuilderPage() {
+export default async function BuilderPage({ searchParams }: { searchParams: Promise<{ tournament?: string }> }) {
+  const { tournament: tournamentId } = await searchParams;
+  
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -33,11 +35,22 @@ export default async function BuilderPage() {
   // Fetch the current page layout, or fall back to default components
   let initialComponents: any[] = [];
   
+  let tournamentSlug: string | undefined;
+
+  if (tournamentId) {
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: tournamentId }
+    });
+    if (tournament) {
+      tournamentSlug = tournament.slug;
+    }
+  }
+
   const existingPage = await prisma.page.findUnique({
     where: {
       organizationId_slug: {
         organizationId: org.id,
-        slug: '/',
+        slug: tournamentId || '/',
       }
     }
   });
@@ -68,5 +81,10 @@ export default async function BuilderPage() {
     ];
   }
 
-  return <BuilderClient initialComponents={initialComponents} tenantSlug={org.slug} />;
+  const tournaments = await prisma.tournament.findMany({
+    where: { organizationId: org.id },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return <BuilderClient initialComponents={initialComponents} tenantSlug={org.slug} tournamentId={tournamentId} tournamentSlug={tournamentSlug} tournaments={tournaments} />;
 }

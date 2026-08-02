@@ -39,6 +39,7 @@ model Tournament {
   slug           String
   sport          String       @default("Pickleball") // Pickleball, Tennis, Badminton
   format         String       @default("SingleElimination") // SingleElimination, DoubleElimination, RoundRobin
+  status         String       @default("DRAFT") // DRAFT, PUBLISHED, IN_PROGRESS, COMPLETED
   startDate      DateTime?
   endDate        DateTime?
   organizationId String

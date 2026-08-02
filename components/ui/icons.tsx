@@ -116,3 +116,11 @@ export const PanelLeftOpenIcon = ({ size = 16, className = "" }) => (
     <polyline points="14 9 17 12 14 15" />
   </svg>
 );
+
+export const PaintbrushIcon = ({ size = 16, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m11.6 16.8-3.4-3.4"/>
+    <path d="m21.8 3.2-9 9a2 2 0 0 0-.5 1.5v3.4c0 .4-.3.7-.7.7H9a2.3 2.3 0 0 1-2.3-2.3v-1.6c0-.6.2-1.2.6-1.6l9-9a2 2 0 0 1 2.8 0l1.8 1.8a2 2 0 0 1 0 2.8Z"/>
+    <path d="M3 21c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v2c0 .6-.4 1-1 1Z"/>
+  </svg>
+);
