@@ -51,6 +51,13 @@ describe('Platform Admin Actions', () => {
           name: 'New Org',
           slug: 'new-org',
           isActive: true,
+          users: {
+            create: {
+              email: 'admin@new-org.com',
+              name: 'New Org Admin',
+              role: 'ADMIN',
+            },
+          },
         },
       });
       expect(revalidatePath).toHaveBeenCalledWith('/platform-admin');

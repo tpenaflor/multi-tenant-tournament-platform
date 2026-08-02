@@ -143,6 +143,13 @@ export default function BuilderClient({ initialComponents, tenantSlug }: Builder
             {isSaving ? 'Saving...' : 'Save Layout'}
           </button>
           <div className="w-px h-6 bg-slate-800 mx-1"></div>
+          <a
+            href="/settings"
+            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all"
+            title="Settings"
+          >
+            <SettingsIcon size={20} />
+          </a>
           <form action={logout}>
             <button className="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-sm font-medium transition-all">
               Logout

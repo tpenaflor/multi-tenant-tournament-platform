@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { logout } from '@/app/login/actions';
+import { SettingsIcon } from '@/components/ui/icons';
 
 export default async function PlatformAdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -29,6 +30,9 @@ export default async function PlatformAdminLayout({ children }: { children: Reac
           <h1 className="text-xl font-bold tracking-tight">Platform Admin Dashboard</h1>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-sm text-slate-300 hover:text-white transition-colors">Back to Main Site</Link>
+            <Link href="/settings" className="text-slate-300 hover:text-white transition-colors" title="Settings">
+              <SettingsIcon size={20} />
+            </Link>
             <form action={logout}>
               <button type="submit" className="text-sm px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors">
                 Logout

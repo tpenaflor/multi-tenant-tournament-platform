@@ -16,8 +16,8 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    // Basic error handling for the UI to read
-    return redirect('/login?error=Could not authenticate user');
+    // Pass the actual Supabase auth error message to the UI
+    return redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
   // Find user in Prisma to determine their role and organization
@@ -29,7 +29,7 @@ export async function login(formData: FormData) {
     return redirect('/platform-admin');
   }
 
-  if (user?.role === 'ORGANIZER' && user.organizationId) {
+  if ((user?.role === 'ORGANIZER' || user?.role === 'ADMIN') && user.organizationId) {
     const org = await prisma.organization.findUnique({
       where: { id: user.organizationId },
     });

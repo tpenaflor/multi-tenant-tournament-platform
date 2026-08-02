@@ -62,7 +62,7 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
               required
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full px-3 py-2 text-slate-900 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
               placeholder="e.g. Atlanta Pickleball"
             />
           </div>
@@ -73,7 +73,7 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
               required
               value={newSlug}
               onChange={(e) => setNewSlug(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full px-3 py-2 text-slate-900 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
               placeholder="e.g. atlanta"
             />
           </div>
