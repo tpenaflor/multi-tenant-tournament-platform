@@ -17,11 +17,25 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ComponentItem, renderBuilderComponent } from '@/components/builder/ComponentRegistry';
-import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon, MenuIcon, XIcon } from '@/components/ui/icons';
+import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon, MenuIcon, XIcon, SearchIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
 import { savePageLayout, generateAiComponentAction } from './actions';
 import { logout } from '@/app/login/actions';
 import { isAiComponentEnabled } from '@/lib/featureFlags';
+import { TOURNAMENT_TEMPLATES, TournamentTemplate } from '@/lib/templates';
+
+const AVAILABLE_COMPONENTS = [
+  { id: 'HeroBanner', title: 'Hero Banner', desc: 'Title, CTA & Dates', isPremium: false, requiresTournament: false },
+  { id: 'TournamentList', title: 'Tournament List', desc: 'Active & upcoming events', isPremium: false, requiresTournament: false, hideIfTournament: true },
+  { id: 'LiveBracketEmbed', title: 'Live Bracket', desc: 'Interactive bracket tree', isPremium: false, requiresTournament: true },
+  { id: 'SponsorGrid', title: 'Sponsor Grid', desc: 'Partner logos & tiers', isPremium: false, requiresTournament: false },
+  { id: 'LocationLogistics', title: 'Location & Venue', desc: 'Parking & Facility rules', isPremium: false, requiresTournament: true },
+  { id: 'HeroPremium', title: 'Hero Premium', desc: 'Striking hero with countdown', isPremium: true, requiresTournament: false },
+  { id: 'FeatureSection', title: 'Feature Section', desc: 'Split grid feature highlight', isPremium: true, requiresTournament: false },
+  { id: 'InfoGrid', title: 'Info Grid', desc: '3-column stats/info', isPremium: true, requiresTournament: false },
+  { id: 'ImageBanner', title: 'Image Banner', desc: 'Large image with gradient overlay', isPremium: true, requiresTournament: false },
+  { id: 'MarqueeDivider', title: 'Marquee Divider', desc: 'Scrolling text band separator', isPremium: true, requiresTournament: false },
+];
 
 interface BuilderClientProps {
   initialComponents: ComponentItem[];
@@ -40,6 +54,8 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [mobileTab, setMobileTab] = useState<'palette' | 'canvas'>('canvas');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [componentSearchQuery, setComponentSearchQuery] = useState('');
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -107,7 +123,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
 
   const selectedComponent = components.find((c) => c.id === selectedComponentId);
 
-  const updateSelectedComponentProp = (key: string, value: string) => {
+  const updateSelectedComponentProp = (key: string, value: any) => {
     if (!selectedComponentId) return;
     setComponents((prev) =>
       prev.map((c) =>
@@ -151,6 +167,13 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
       );
     } else {
       setAiError(response.error || 'Failed to generate component');
+    }
+  };
+
+  const handleApplyTemplate = (template: TournamentTemplate) => {
+    if (window.confirm('Applying a template will replace all current components. Continue?')) {
+      setComponents([...template.components]);
+      setShowTemplateModal(false);
     }
   };
 
@@ -296,82 +319,76 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   <PanelLeftCloseIcon size={16} />
                 </button>
               </div>
+              
+              <button
+                onClick={() => setShowTemplateModal(true)}
+                className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 transition-all group flex items-center justify-between mb-4"
+              >
+                <div>
+                  <div className="font-bold text-sm text-amber-400">Load Template</div>
+                  <div className="text-xs text-amber-500/70">Start with a pre-built layout</div>
+                </div>
+              </button>
+
+              <div className="mb-4 relative">
+                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input 
+                  type="text" 
+                  placeholder="Search components..." 
+                  value={componentSearchQuery}
+                  onChange={(e) => setComponentSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 placeholder-slate-500"
+                />
+              </div>
+
               <div className="space-y-2.5">
-              <button
-                onClick={() => addComponent('HeroBanner')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-semibold text-sm text-white group-hover:text-sky-400">Hero Banner</div>
-                  <div className="text-xs text-slate-400">Title, CTA & Dates</div>
-                </div>
-                <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-              </button>
+                {AVAILABLE_COMPONENTS.filter(c => 
+                  c.title.toLowerCase().includes(componentSearchQuery.toLowerCase()) || 
+                  c.desc.toLowerCase().includes(componentSearchQuery.toLowerCase())
+                ).filter(c => {
+                  if (c.requiresTournament && !tournamentId) return false;
+                  if (c.hideIfTournament && tournamentId) return false;
+                  return true;
+                }).map((c, index, array) => {
+                  // Render category headers if it's the first item of that category in the filtered list
+                  const isFirstPremium = c.isPremium && (index === 0 || !array[index - 1].isPremium);
+                  
+                  return (
+                    <React.Fragment key={c.id}>
+                      {isFirstPremium && (
+                        <>
+                          <div className="my-4 h-px bg-slate-800/50 w-full"></div>
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4">Premium Components</h4>
+                        </>
+                      )}
+                      <button
+                        onClick={() => addComponent(c.id as any)}
+                        className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="font-semibold text-sm text-white group-hover:text-sky-400">{c.title}</div>
+                          <div className="text-xs text-slate-400">{c.desc}</div>
+                        </div>
+                        <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
 
-              {!tournamentId && (
-                <button
-                  onClick={() => addComponent('TournamentList')}
-                  className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-semibold text-sm text-white group-hover:text-sky-400">Tournament List</div>
-                    <div className="text-xs text-slate-400">Active & upcoming events</div>
-                  </div>
-                  <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-                </button>
-              )}
-
-              {tournamentId && (
-                <button
-                  onClick={() => addComponent('LiveBracketEmbed')}
-                  className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-semibold text-sm text-white group-hover:text-sky-400">Live Bracket</div>
-                    <div className="text-xs text-slate-400">Interactive bracket tree</div>
-                  </div>
-                  <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-                </button>
-              )}
-
-              <button
-                onClick={() => addComponent('SponsorGrid')}
-                className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-semibold text-sm text-white group-hover:text-sky-400">Sponsor Grid</div>
-                  <div className="text-xs text-slate-400">Partner logos & tiers</div>
-                </div>
-                <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-              </button>
-
-              {tournamentId && (
-                <button
-                  onClick={() => addComponent('LocationLogistics')}
-                  className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-semibold text-sm text-white group-hover:text-sky-400">Location & Venue</div>
-                    <div className="text-xs text-slate-400">Parking & Facility rules</div>
-                  </div>
-                  <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
-                </button>
-              )}
-
-              {showAiComponent && (
-                <button
-                  onClick={() => addComponent('AIDynamicBlock')}
-                  className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-sky-900/40 to-indigo-900/40 hover:from-sky-800/60 hover:to-indigo-800/60 border border-sky-500/40 transition-all group flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-semibold text-sm text-sky-300 group-hover:text-white flex items-center gap-1.5">
-                      <span>✨ AI Custom Component</span>
+                {showAiComponent && (
+                  <button
+                    onClick={() => addComponent('AIDynamicBlock')}
+                    className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-sky-900/40 to-indigo-900/40 hover:from-sky-800/60 hover:to-indigo-800/60 border border-sky-500/40 transition-all group flex items-center justify-between mt-4"
+                  >
+                    <div>
+                      <div className="font-semibold text-sm text-sky-300 group-hover:text-white flex items-center gap-1.5">
+                        <span>✨ AI Custom Component</span>
+                      </div>
+                      <div className="text-xs text-slate-400">Prompt or upload screenshot</div>
                     </div>
-                    <div className="text-xs text-slate-400">Prompt or upload screenshot</div>
-                  </div>
-                  <PlusIcon size={16} className="text-sky-400 group-hover:text-white" />
-                </button>
-              )}
+                    <PlusIcon size={16} className="text-sky-400 group-hover:text-white" />
+                  </button>
+                )}
               </div>
             </div>
           ) : (
@@ -601,6 +618,131 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 </div>
               )}
 
+              {selectedComponent.type === 'HeroPremium' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                    <input type="text" value={selectedComponent.props.title || ''} onChange={(e) => updateSelectedComponentProp('title', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
+                    <textarea value={selectedComponent.props.subtitle || ''} onChange={(e) => updateSelectedComponentProp('subtitle', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Overline</label>
+                    <input type="text" value={selectedComponent.props.overline || ''} onChange={(e) => updateSelectedComponentProp('overline', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Event Date</label>
+                    <input type="text" value={selectedComponent.props.eventDate || ''} onChange={(e) => updateSelectedComponentProp('eventDate', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">CTA Text</label>
+                    <input type="text" value={selectedComponent.props.ctaText || ''} onChange={(e) => updateSelectedComponentProp('ctaText', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">CTA Link</label>
+                    <input type="text" value={selectedComponent.props.ctaLink || ''} onChange={(e) => updateSelectedComponentProp('ctaLink', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                </div>
+              )}
+
+              {selectedComponent.type === 'FeatureSection' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Eyebrow</label>
+                    <input type="text" value={selectedComponent.props.eyebrow || ''} onChange={(e) => updateSelectedComponentProp('eyebrow', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                    <input type="text" value={selectedComponent.props.title || ''} onChange={(e) => updateSelectedComponentProp('title', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                    <textarea value={selectedComponent.props.description || ''} onChange={(e) => updateSelectedComponentProp('description', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none" />
+                  </div>
+                  <div className="my-4 h-px bg-slate-800 w-full"></div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Feature Title</label>
+                    <input type="text" value={selectedComponent.props.featureTitle || ''} onChange={(e) => updateSelectedComponentProp('featureTitle', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Feature Description</label>
+                    <textarea value={selectedComponent.props.featureDescription || ''} onChange={(e) => updateSelectedComponentProp('featureDescription', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Feature Tags (comma separated)</label>
+                    <input type="text" value={(selectedComponent.props.featureTags || []).join(', ')} onChange={(e) => updateSelectedComponentProp('featureTags', e.target.value.split(',').map(s => s.trim()))} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                </div>
+              )}
+
+              {selectedComponent.type === 'InfoGrid' && (
+                <div className="space-y-6">
+                  {[0, 1, 2].map(idx => {
+                    const item = (selectedComponent.props.items || [])[idx] || { title: '', subtitle: '', description: '', highlight: false };
+                    return (
+                      <div key={idx} className="space-y-2 border border-slate-700 p-3 rounded-lg bg-slate-950/50">
+                        <div className="font-bold text-xs text-slate-400 mb-2">Item 0{idx + 1}</div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                          <input type="text" value={item.title || ''} onChange={(e) => {
+                            const newItems = [...(selectedComponent.props.items || [])];
+                            if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                            newItems[idx].title = e.target.value;
+                            updateSelectedComponentProp('items', newItems);
+                          }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
+                          <input type="text" value={item.subtitle || ''} onChange={(e) => {
+                            const newItems = [...(selectedComponent.props.items || [])];
+                            if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                            newItems[idx].subtitle = e.target.value;
+                            updateSelectedComponentProp('items', newItems);
+                          }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                          <input type="text" value={item.description || ''} onChange={(e) => {
+                            const newItems = [...(selectedComponent.props.items || [])];
+                            if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                            newItems[idx].description = e.target.value;
+                            updateSelectedComponentProp('items', newItems);
+                          }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {selectedComponent.type === 'ImageBanner' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                    <input type="text" value={selectedComponent.props.title || ''} onChange={(e) => updateSelectedComponentProp('title', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Overline</label>
+                    <input type="text" value={selectedComponent.props.overline || ''} onChange={(e) => updateSelectedComponentProp('overline', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Image URL</label>
+                    <input type="text" value={selectedComponent.props.imageUrl || ''} onChange={(e) => updateSelectedComponentProp('imageUrl', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                </div>
+              )}
+
+              {selectedComponent.type === 'MarqueeDivider' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Marquee Text</label>
+                    <input type="text" value={selectedComponent.props.text || ''} onChange={(e) => updateSelectedComponentProp('text', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+                  </div>
+                </div>
+              )}
+
               {selectedComponent.type === 'AIDynamicBlock' && (
                 <div className="space-y-4">
                   <div>
@@ -701,6 +843,63 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 >
                   Done
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Template Modal */}
+        {showTemplateModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowTemplateModal(false)}
+            ></div>
+            
+            <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+                <div className="flex items-center gap-2">
+                  <LayoutIcon size={18} className="text-sky-400" />
+                  <h3 className="font-bold text-white text-sm">Choose a Template</h3>
+                </div>
+                <button 
+                  onClick={() => setShowTemplateModal(false)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <XIcon size={18} />
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto grid gap-6 sm:grid-cols-2">
+                {TOURNAMENT_TEMPLATES.map((template) => (
+                  <div 
+                    key={template.id}
+                    onClick={() => handleApplyTemplate(template)}
+                    className="border border-slate-700 bg-slate-800/50 rounded-xl p-5 hover:border-sky-500 cursor-pointer transition-all hover:bg-slate-800 hover:-translate-y-1 shadow-md"
+                  >
+                    <div className="h-32 bg-slate-950 rounded-lg mb-4 flex items-center justify-center border border-slate-800 overflow-hidden relative">
+                      {template.id === 'premium-tournament' ? (
+                        <div className="w-full h-full p-2 flex flex-col gap-1">
+                          <div className="w-full h-1/2 bg-sky-900/30 rounded flex items-center p-2">
+                            <div className="w-1/2 h-2 bg-slate-700 rounded"></div>
+                          </div>
+                          <div className="w-full h-2 bg-sky-500 rounded-full"></div>
+                          <div className="w-full h-1/3 flex gap-1">
+                            <div className="flex-1 bg-slate-800 rounded"></div>
+                            <div className="flex-1 bg-slate-800 rounded"></div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full p-2 flex flex-col gap-2">
+                          <div className="w-full h-1/3 bg-slate-800 rounded"></div>
+                          <div className="w-full h-2/3 bg-slate-800/50 rounded"></div>
+                        </div>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-white text-lg">{template.name}</h4>
+                    <p className="text-sm text-slate-400 mt-2">{template.description}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

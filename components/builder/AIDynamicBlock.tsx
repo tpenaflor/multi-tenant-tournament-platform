@@ -1,4 +1,5 @@
 import React from 'react';
+import { isAiComponentEnabled } from '@/lib/featureFlags';
 
 export interface AIDynamicBlockProps {
   title?: string;
@@ -79,6 +80,10 @@ export const AIDynamicBlock: React.FC<AIDynamicBlockProps> = ({
   htmlContent,
   dynamicData,
 }) => {
+  if (!isAiComponentEnabled()) {
+    return null;
+  }
+
   if (!htmlContent) {
     return (
       <div className="w-full rounded-2xl bg-slate-900/90 border-2 border-dashed border-sky-500/40 p-8 text-center space-y-3 shadow-xl backdrop-blur-sm">
