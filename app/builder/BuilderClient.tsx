@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ComponentItem, renderBuilderComponent } from '@/components/builder/ComponentRegistry';
-import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon } from '@/components/ui/icons';
+import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon, MenuIcon, XIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
 import { savePageLayout, generateAiComponentAction } from './actions';
 import { logout } from '@/app/login/actions';
@@ -38,6 +38,8 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const [isSaving, setIsSaving] = useState(false);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [mobileTab, setMobileTab] = useState<'palette' | 'canvas' | 'properties'>('canvas');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -69,6 +71,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
     e.stopPropagation();
     if (selectedComponentId === id) {
       setSelectedComponentId(null);
+      setMobileTab('canvas');
     }
     setComponents(components.filter((c) => c.id !== id));
   };
@@ -154,20 +157,21 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       {/* Top Navbar */}
-      <header className="h-16 border-b border-slate-800 bg-slate-900/90 px-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
+      <header className="h-16 border-b border-slate-800 bg-slate-900/90 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-black text-slate-950">
+          <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-black text-slate-950 shrink-0">
             <PaintbrushIcon size={18} />
           </div>
           <div>
-            <h1 className="font-bold text-white text-base leading-none">
+            <h1 className="font-bold text-white text-base leading-none truncate max-w-[180px] sm:max-w-none">
               {tournamentId ? 'Tournament Page Builder' : 'Home Page Builder'}
             </h1>
-            <span className="text-xs text-slate-400">Tenant Workspace ({tenantSlug})</span>
+            <span className="text-xs text-slate-400 truncate block max-w-[180px] sm:max-w-none">Tenant Workspace ({tenantSlug})</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Desktop Header Actions */}
+        <div className="hidden lg:flex items-center gap-3">
           <a
             href="/dashboard"
             className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium transition-all mr-2"
@@ -210,12 +214,80 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
             </button>
           </form>
         </div>
+
+        {/* Mobile Header Toggle */}
+        <div className="flex lg:hidden items-center gap-2">
+          {savedStatus && (
+            <div className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-full font-medium ${savedStatus.includes('Error') ? 'text-red-400 bg-red-500/10 border border-red-500/30' : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/30'}`}>
+              <CheckCircleIcon size={12} />
+            </div>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="p-2 rounded-lg bg-sky-500 text-slate-950 shadow-md disabled:bg-sky-500/50 flex items-center gap-1"
+            title="Save Layout"
+          >
+            <SaveIcon size={16} />
+          </button>
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
+          >
+            {isMobileMenuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
+          </button>
+        </div>
       </header>
 
+      {/* Mobile Nav Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-slate-900 border-b border-slate-800 p-4 flex flex-col gap-3 shadow-xl absolute w-full z-40 top-16">
+          <a
+            href="/dashboard"
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
+          >
+            ← Back to Dashboard
+          </a>
+          <a
+            href={tournamentSlug ? `/tenant/${tenantSlug}/tournaments/${tournamentSlug}` : `/tenant/${tenantSlug}`}
+            target="_blank"
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
+          >
+            <EyeIcon size={16} />
+            Preview Live Site
+          </a>
+          <a
+            href="/settings"
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
+          >
+            <SettingsIcon size={16} />
+            Settings
+          </a>
+          <form action={logout}>
+            <button className="w-full text-left flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-rose-400 text-sm font-medium">
+              Logout
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Mobile Tab Switcher */}
+      <div className="lg:hidden flex bg-slate-900 border-b border-slate-800 text-sm z-30 relative shrink-0">
+        <button onClick={() => setMobileTab('palette')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'palette' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
+          Palette
+        </button>
+        <button onClick={() => setMobileTab('canvas')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'canvas' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
+          Canvas
+        </button>
+        <button onClick={() => setMobileTab('properties')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'properties' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
+          Properties
+        </button>
+      </div>
+
       {/* Main Workspace */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar: Component Palette */}
-        <aside className={`${isSidebarOpen ? 'w-72 p-5' : 'w-16 p-4 flex flex-col items-center'} border-r border-slate-800 bg-slate-900/50 transition-all duration-300 overflow-y-auto overflow-x-hidden relative shrink-0`}>
+        <aside className={`${mobileTab === 'palette' ? 'flex w-full' : 'hidden'} lg:flex ${isSidebarOpen ? 'lg:w-72 p-5' : 'lg:w-16 lg:p-4 flex-col items-center'} border-r border-slate-800 bg-slate-900/50 transition-all duration-300 overflow-y-auto overflow-x-hidden relative shrink-0`}>
           {isSidebarOpen ? (
             <div className="space-y-6 w-full whitespace-nowrap">
               <div className="flex items-center justify-between mb-2">
@@ -313,7 +385,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         </aside>
 
         {/* Center Canvas: Live Page Canvas with Drag and Drop */}
-        <main className="flex-1 bg-slate-950 p-8 overflow-y-auto" onClick={() => setSelectedComponentId(null)}>
+        <main className={`${mobileTab === 'canvas' ? 'block' : 'hidden'} lg:block flex-1 bg-slate-950 p-4 lg:p-8 overflow-y-auto`} onClick={() => { setSelectedComponentId(null); setMobileTab('canvas'); }}>
           <div className="max-w-4xl mx-auto space-y-4">
             <div className="text-xs text-slate-500 font-mono mb-4 uppercase tracking-widest text-center">
               Live Interactive Page Canvas ({components.length} components)
@@ -334,8 +406,11 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedComponentId(comp.id);
+                        if (window.innerWidth < 1024) {
+                          setMobileTab('properties');
+                        }
                       }}
-                      className={`relative group border-2 rounded-3xl transition-all p-1 cursor-grab active:cursor-grabbing ${selectedComponentId === comp.id ? 'border-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.15)]' : 'border-transparent hover:border-sky-500/50'}`}
+                      className={`relative group border-2 rounded-3xl transition-all p-1 cursor-grab active:cursor-grabbing touch-manipulation ${selectedComponentId === comp.id ? 'border-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.15)]' : 'border-transparent hover:border-sky-500/50'}`}
                     >
                       {/* Component Action Controls */}
                       <div className={`absolute top-4 right-4 z-20 transition-opacity bg-slate-900/90 border border-slate-700 p-1.5 rounded-xl flex items-center gap-1 shadow-xl backdrop-blur-md ${selectedComponentId === comp.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
@@ -361,7 +436,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         </main>
 
         {/* Right Sidebar: CMS Properties Editor */}
-        <aside className="w-80 border-l border-slate-800 bg-slate-900/50 p-5 overflow-y-auto">
+        <aside className={`${mobileTab === 'properties' ? 'block w-full' : 'hidden'} lg:block lg:w-80 border-l border-slate-800 bg-slate-900/50 p-5 overflow-y-auto shrink-0`}>
           <div className="flex items-center gap-2 mb-6">
             <SettingsIcon size={16} className="text-sky-400" />
             <h3 className="font-bold text-white uppercase tracking-widest text-sm">Component CMS</h3>

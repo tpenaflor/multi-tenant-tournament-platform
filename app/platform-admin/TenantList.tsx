@@ -54,7 +54,7 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
   return (
     <div>
       <div className="p-4 bg-slate-50 border-b border-slate-200">
-        <form onSubmit={handleAdd} className="flex gap-4 items-end">
+        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
           <div className="flex-1">
             <label className="block text-sm font-medium text-slate-700 mb-1">Organization Name</label>
             <input 
@@ -87,47 +87,49 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
         </form>
       </div>
 
-      <table className="w-full text-left">
-        <thead className="bg-slate-50 border-b border-slate-200">
-          <tr>
-            <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Tenant Name</th>
-            <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Slug</th>
-            <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Created At</th>
-            <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Status</th>
-            <th className="px-6 py-4 font-semibold text-slate-600 text-sm text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {organizations.map((org) => (
-            <tr key={org.id} className="hover:bg-slate-50/50 transition-colors">
-              <td className="px-6 py-4 text-slate-900 font-medium">{org.name}</td>
-              <td className="px-6 py-4 text-slate-500 font-mono text-sm">{org.slug}</td>
-              <td className="px-6 py-4 text-slate-500 text-sm">{new Date(org.createdAt).toLocaleDateString()}</td>
-              <td className="px-6 py-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${org.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                  {org.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </td>
-              <td className="px-6 py-4 text-right">
-                <button
-                  onClick={() => handleToggle(org.id, org.isActive)}
-                  disabled={isPending}
-                  className={`text-sm font-medium ${org.isActive ? 'text-rose-600 hover:text-rose-700' : 'text-emerald-600 hover:text-emerald-700'} disabled:opacity-50`}
-                >
-                  {org.isActive ? 'Deactivate' : 'Activate'}
-                </button>
-              </td>
-            </tr>
-          ))}
-          {organizations.length === 0 && (
+      <div className="overflow-x-auto">
+        <table className="w-full text-left min-w-[600px]">
+          <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                No tenants found. Add one above to get started.
-              </td>
+              <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Tenant Name</th>
+              <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Slug</th>
+              <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Created At</th>
+              <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Status</th>
+              <th className="px-6 py-4 font-semibold text-slate-600 text-sm text-right">Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {organizations.map((org) => (
+              <tr key={org.id} className="hover:bg-slate-50/50 transition-colors">
+                <td className="px-6 py-4 text-slate-900 font-medium">{org.name}</td>
+                <td className="px-6 py-4 text-slate-500 font-mono text-sm">{org.slug}</td>
+                <td className="px-6 py-4 text-slate-500 text-sm">{new Date(org.createdAt).toLocaleDateString()}</td>
+                <td className="px-6 py-4">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${org.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                    {org.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button
+                    onClick={() => handleToggle(org.id, org.isActive)}
+                    disabled={isPending}
+                    className={`text-sm font-medium ${org.isActive ? 'text-rose-600 hover:text-rose-700' : 'text-emerald-600 hover:text-emerald-700'} disabled:opacity-50`}
+                  >
+                    {org.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {organizations.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                  No tenants found. Add one above to get started.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
