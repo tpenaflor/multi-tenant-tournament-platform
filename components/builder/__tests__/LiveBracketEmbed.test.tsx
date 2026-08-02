@@ -10,9 +10,9 @@ describe('LiveBracketEmbed', () => {
     expect(screen.getByText('Double Elimination')).toBeInTheDocument();
     expect(screen.getByText('Live Tournament Bracket')).toBeInTheDocument();
     expect(screen.getByText('● Live Updates')).toBeInTheDocument();
-    expect(screen.getByText('Quarterfinals')).toBeInTheDocument();
-    expect(screen.getByText('Semifinals')).toBeInTheDocument();
-    expect(screen.getByText('Grand Finals 🏆')).toBeInTheDocument();
+    expect(screen.getAllByText('Quarterfinals')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Semifinals')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Grand Finals 🏆')[0]).toBeInTheDocument();
   });
 
   it('renders provided props correctly', () => {

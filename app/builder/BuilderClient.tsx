@@ -38,7 +38,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const [isSaving, setIsSaving] = useState(false);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [mobileTab, setMobileTab] = useState<'palette' | 'canvas' | 'properties'>('canvas');
+  const [mobileTab, setMobileTab] = useState<'palette' | 'canvas'>('canvas');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -279,9 +279,6 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         <button onClick={() => setMobileTab('canvas')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'canvas' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
           Canvas
         </button>
-        <button onClick={() => setMobileTab('properties')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'properties' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
-          Properties
-        </button>
       </div>
 
       {/* Main Workspace */}
@@ -406,9 +403,6 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedComponentId(comp.id);
-                        if (window.innerWidth < 1024) {
-                          setMobileTab('properties');
-                        }
                       }}
                       className={`relative group border-2 rounded-3xl transition-all p-1 cursor-grab active:cursor-grabbing touch-manipulation ${selectedComponentId === comp.id ? 'border-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.15)]' : 'border-transparent hover:border-sky-500/50'}`}
                     >
@@ -435,15 +429,30 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           </div>
         </main>
 
-        {/* Right Sidebar: CMS Properties Editor */}
-        <aside className={`${mobileTab === 'properties' ? 'block w-full' : 'hidden'} lg:block lg:w-80 border-l border-slate-800 bg-slate-900/50 p-5 overflow-y-auto shrink-0`}>
-          <div className="flex items-center gap-2 mb-6">
-            <SettingsIcon size={16} className="text-sky-400" />
-            <h3 className="font-bold text-white uppercase tracking-widest text-sm">Component CMS</h3>
-          </div>
-          
-          {selectedComponent ? (
-            <div className="space-y-4">
+        {/* Properties Modal */}
+        {selectedComponent && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setSelectedComponentId(null)}
+            ></div>
+            
+            <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+                <div className="flex items-center gap-2">
+                  <SettingsIcon size={18} className="text-sky-400" />
+                  <h3 className="font-bold text-white text-sm">Edit Component Properties</h3>
+                </div>
+                <button 
+                  onClick={() => setSelectedComponentId(null)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <XIcon size={18} />
+                </button>
+              </div>
+              
+              <div className="p-5 overflow-y-auto">
+                <div className="space-y-4">
               <div className="bg-slate-800/80 border border-slate-700 rounded-lg p-3 mb-6">
                 <span className="text-xs text-slate-400 uppercase tracking-widest">Editing</span>
                 <div className="font-bold text-sky-400">{selectedComponent.type}</div>
@@ -675,14 +684,27 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   </div>
                 </div>
               )}
+                </div>
+              </div>
+              
+              <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-between items-center shrink-0">
+                <button 
+                  onClick={(e) => removeComponent(selectedComponent.id, e)}
+                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <TrashIcon size={16} />
+                  Remove
+                </button>
+                <button 
+                  onClick={() => setSelectedComponentId(null)}
+                  className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-md"
+                >
+                  Done
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-48 text-center text-slate-500">
-              <SettingsIcon size={32} className="mb-3 opacity-20" />
-              <p className="text-sm">Select a component on the canvas to edit its properties.</p>
-            </div>
-          )}
-        </aside>
+          </div>
+        )}
       </div>
     </div>
   );
