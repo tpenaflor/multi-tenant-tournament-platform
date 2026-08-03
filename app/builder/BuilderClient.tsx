@@ -16,26 +16,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { ComponentItem, renderBuilderComponent } from '@/components/builder/ComponentRegistry';
+import { ComponentItem, renderBuilderComponent, COMPONENT_SCHEMAS } from '@/components/builder/ComponentRegistry';
 import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon, MenuIcon, XIcon, SearchIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
-import { savePageLayout, generateAiComponentAction } from './actions';
+import { savePageLayout, generateAiComponentAction, saveTenantTheme } from './actions';
 import { logout } from '@/app/login/actions';
 import { isAiComponentEnabled } from '@/lib/featureFlags';
 import { TOURNAMENT_TEMPLATES, TournamentTemplate } from '@/lib/templates';
 
-const AVAILABLE_COMPONENTS = [
-  { id: 'HeroBanner', title: 'Hero Banner', desc: 'Title, CTA & Dates', isPremium: false, requiresTournament: false },
-  { id: 'TournamentList', title: 'Tournament List', desc: 'Active & upcoming events', isPremium: false, requiresTournament: false, hideIfTournament: true },
-  { id: 'LiveBracketEmbed', title: 'Live Bracket', desc: 'Interactive bracket tree', isPremium: false, requiresTournament: true },
-  { id: 'SponsorGrid', title: 'Sponsor Grid', desc: 'Partner logos & tiers', isPremium: false, requiresTournament: false },
-  { id: 'LocationLogistics', title: 'Location & Venue', desc: 'Parking & Facility rules', isPremium: false, requiresTournament: true },
-  { id: 'HeroPremium', title: 'Hero Premium', desc: 'Striking hero with countdown', isPremium: true, requiresTournament: false },
-  { id: 'FeatureSection', title: 'Feature Section', desc: 'Split grid feature highlight', isPremium: true, requiresTournament: false },
-  { id: 'InfoGrid', title: 'Info Grid', desc: '3-column stats/info', isPremium: true, requiresTournament: false },
-  { id: 'ImageBanner', title: 'Image Banner', desc: 'Large image with gradient overlay', isPremium: true, requiresTournament: false },
-  { id: 'MarqueeDivider', title: 'Marquee Divider', desc: 'Scrolling text band separator', isPremium: true, requiresTournament: false },
-];
+
 
 interface BuilderClientProps {
   initialComponents: ComponentItem[];
@@ -43,9 +32,10 @@ interface BuilderClientProps {
   tournamentId?: string;
   tournamentSlug?: string;
   tournaments?: any[];
+  initialTheme?: string | null;
 }
 
-export default function BuilderClient({ initialComponents, tenantSlug, tournamentId, tournamentSlug, tournaments }: BuilderClientProps) {
+export default function BuilderClient({ initialComponents, tenantSlug, tournamentId, tournamentSlug, tournaments, initialTheme }: BuilderClientProps) {
   const [components, setComponents] = useState<ComponentItem[]>(initialComponents);
 
   const [savedStatus, setSavedStatus] = useState<string | null>(null);
@@ -55,7 +45,20 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const [mobileTab, setMobileTab] = useState<'palette' | 'canvas'>('canvas');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [componentSearchQuery, setComponentSearchQuery] = useState('');
+  
+  // Theme state
+  const [theme, setTheme] = useState(() => {
+    if (initialTheme) {
+      try {
+        return JSON.parse(initialTheme);
+      } catch (e) {
+        return { primaryColor: '#0ea5e9', backgroundColor: '#020617', textColor: '#f8fafc' };
+      }
+    }
+    return { primaryColor: '#0ea5e9', backgroundColor: '#020617', textColor: '#f8fafc' };
+  });
 
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -109,14 +112,18 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
     setIsSaving(true);
     setSavedStatus(null);
     
+    // Save page layout
     const response = await savePageLayout(components, tournamentId);
     
+    // Save theme
+    const themeResponse = await saveTenantTheme(JSON.stringify(theme));
+    
     setIsSaving(false);
-    if (response.success) {
-      setSavedStatus('Page Layout Saved to Database!');
+    if (response.success && themeResponse.success) {
+      setSavedStatus('Layout and Theme Saved!');
       setTimeout(() => setSavedStatus(null), 3000);
     } else {
-      setSavedStatus(`Error: ${response.error}`);
+      setSavedStatus(`Error: ${response.error || themeResponse.error}`);
       setTimeout(() => setSavedStatus(null), 5000);
     }
   };
@@ -224,10 +231,17 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
             {isSaving ? 'Saving...' : 'Save Layout'}
           </button>
           <div className="w-px h-6 bg-slate-800 mx-1"></div>
+          <button
+            onClick={() => setShowThemeModal(true)}
+            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all"
+            title="Theme Settings"
+          >
+            <SettingsIcon size={20} />
+          </button>
           <a
             href="/settings"
             className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all"
-            title="Settings"
+            title="Account Settings"
           >
             <SettingsIcon size={20} />
           </a>
@@ -279,12 +293,19 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
             <EyeIcon size={16} />
             Preview Live Site
           </a>
+          <button
+            onClick={() => { setShowThemeModal(true); setIsMobileMenuOpen(false); }}
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium w-full text-left"
+          >
+            <SettingsIcon size={16} />
+            Theme Settings
+          </button>
           <a
             href="/settings"
             className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
           >
             <SettingsIcon size={16} />
-            Settings
+            Account Settings
           </a>
           <form action={logout}>
             <button className="w-full text-left flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-rose-400 text-sm font-medium">
@@ -342,12 +363,13 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               </div>
 
               <div className="space-y-2.5">
-                {AVAILABLE_COMPONENTS.filter(c => 
+                {COMPONENT_SCHEMAS.filter(c => 
                   c.title.toLowerCase().includes(componentSearchQuery.toLowerCase()) || 
-                  c.desc.toLowerCase().includes(componentSearchQuery.toLowerCase())
+                  c.description.toLowerCase().includes(componentSearchQuery.toLowerCase())
                 ).filter(c => {
                   if (c.requiresTournament && !tournamentId) return false;
                   if (c.hideIfTournament && tournamentId) return false;
+                  if (c.id === 'AIDynamicBlock') return false;
                   return true;
                 }).map((c, index, array) => {
                   // Render category headers if it's the first item of that category in the filtered list
@@ -367,7 +389,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       >
                         <div>
                           <div className="font-semibold text-sm text-white group-hover:text-sky-400">{c.title}</div>
-                          <div className="text-xs text-slate-400">{c.desc}</div>
+                          <div className="text-xs text-slate-400">{c.description}</div>
                         </div>
                         <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
                       </button>
@@ -446,6 +468,96 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           </div>
         </main>
 
+        {/* Theme Settings Modal */}
+        {showThemeModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowThemeModal(false)}
+            ></div>
+            
+            <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+                <div className="flex items-center gap-2">
+                  <PaintbrushIcon size={18} className="text-sky-400" />
+                  <h3 className="font-bold text-white text-sm">Tenant Global Theme</h3>
+                </div>
+                <button 
+                  onClick={() => setShowThemeModal(false)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <XIcon size={18} />
+                </button>
+              </div>
+              
+              <div className="p-5 overflow-y-auto space-y-5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Primary Color</label>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="color" 
+                      value={theme.primaryColor || '#0ea5e9'} 
+                      onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700" 
+                    />
+                    <input 
+                      type="text" 
+                      value={theme.primaryColor || '#0ea5e9'} 
+                      onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase" 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Background Color</label>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="color" 
+                      value={theme.backgroundColor || '#020617'} 
+                      onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700" 
+                    />
+                    <input 
+                      type="text" 
+                      value={theme.backgroundColor || '#020617'} 
+                      onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase" 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Text Color</label>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="color" 
+                      value={theme.textColor || '#f8fafc'} 
+                      onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
+                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700" 
+                    />
+                    <input 
+                      type="text" 
+                      value={theme.textColor || '#f8fafc'} 
+                      onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase" 
+                    />
+                  </div>
+                </div>
+                <div className="text-xs text-yellow-500 mt-2 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
+                  Note: Theme changes will only apply once you click "Save Layout" in the top bar. They will then be visible across all pages of your tenant site.
+                </div>
+              </div>
+              
+              <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end shrink-0">
+                <button 
+                  onClick={() => setShowThemeModal(false)}
+                  className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-md"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Properties Modal */}
         {selectedComponent && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
@@ -476,356 +588,169 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 <div className="text-xs text-slate-500 font-mono mt-1">{selectedComponent.id}</div>
               </div>
 
-              {/* Dynamic Form based on component type */}
-              {selectedComponent.type === 'HeroBanner' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.title || ''}
-                      onChange={(e) => updateSelectedComponentProp('title', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
-                    <textarea
-                      value={selectedComponent.props.subtitle || ''}
-                      onChange={(e) => updateSelectedComponentProp('subtitle', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.date || ''}
-                      onChange={(e) => updateSelectedComponentProp('date', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Location</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.location || ''}
-                      onChange={(e) => updateSelectedComponentProp('location', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">CTA Text</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.ctaText || ''}
-                      onChange={(e) => updateSelectedComponentProp('ctaText', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">CTA Link</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.ctaLink || ''}
-                      onChange={(e) => updateSelectedComponentProp('ctaLink', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                </div>
-              )}
+                            {/* Dynamic Form based on component type */}
+              {(() => {
+                const schema = COMPONENT_SCHEMAS.find(s => s.id === selectedComponent.type);
+                if (!schema) return null;
 
-              {selectedComponent.type === 'LiveBracketEmbed' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Division Name</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.divisionName || ''}
-                      onChange={(e) => updateSelectedComponentProp('divisionName', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
+                return (
+                  <div className="space-y-4">
+                    {schema.fields.map(field => {
+                      if (field.type === 'text') {
+                        return (
+                          <div key={field.name}>
+                            <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                            <input
+                              id={`field-${field.name}`}
+                              type="text"
+                              value={selectedComponent.props[field.name] || ''}
+                              onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                            />
+                          </div>
+                        );
+                      }
+                      
+                      if (field.type === 'textarea') {
+                        return (
+                          <div key={field.name}>
+                            <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                            <textarea
+                              id={`field-${field.name}`}
+                              value={selectedComponent.props[field.name] || ''}
+                              onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
+                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none"
+                            />
+                          </div>
+                        );
+                      }
+                      
+                      if (field.type === 'tags') {
+                        return (
+                          <div key={field.name}>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                            <input
+                              type="text"
+                              value={(selectedComponent.props[field.name] || []).join(', ')}
+                              onChange={(e) => updateSelectedComponentProp(field.name, e.target.value.split(',').map(s => s.trim()))}
+                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                            />
+                          </div>
+                        );
+                      }
+                      
+                      if (field.type === 'info-grid-items') {
+                        return (
+                          <div key={field.name} className="space-y-6">
+                            {[0, 1, 2].map(idx => {
+                              const item = (selectedComponent.props[field.name] || [])[idx] || { title: '', subtitle: '', description: '', highlight: false };
+                              return (
+                                <div key={idx} className="space-y-2 border border-slate-700 p-3 rounded-lg bg-slate-950/50">
+                                  <div className="font-bold text-xs text-slate-400 mb-2">Item 0{idx + 1}</div>
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                                    <input type="text" value={item.title || ''} onChange={(e) => {
+                                      const newItems = [...(selectedComponent.props[field.name] || [])];
+                                      if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                                      newItems[idx].title = e.target.value;
+                                      updateSelectedComponentProp(field.name, newItems);
+                                    }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
+                                    <input type="text" value={item.subtitle || ''} onChange={(e) => {
+                                      const newItems = [...(selectedComponent.props[field.name] || [])];
+                                      if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                                      newItems[idx].subtitle = e.target.value;
+                                      updateSelectedComponentProp(field.name, newItems);
+                                    }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                                    <input type="text" value={item.description || ''} onChange={(e) => {
+                                      const newItems = [...(selectedComponent.props[field.name] || [])];
+                                      if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                                      newItems[idx].description = e.target.value;
+                                      updateSelectedComponentProp(field.name, newItems);
+                                    }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+                      
+                      if (field.type === 'ai-prompt') {
+                        return (
+                          <div key={field.name} className="space-y-4">
+                            <div>
+                              <label className="block text-xs font-semibold text-sky-400 mb-1">AI Prompt</label>
+                              <textarea
+                                value={selectedComponent.props.prompt || ''}
+                                onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
+                                placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-20 resize-none"
+                              />
+                            </div>
+          
+                            <div>
+                              <label className="block text-xs font-semibold text-sky-400 mb-1">
+                                Reference Image / Wireframe (Vision Input)
+                              </label>
+                              {selectedImageBase64 ? (
+                                <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-slate-950 p-2 group">
+                                  <img
+                                    src={selectedImageBase64}
+                                    alt="Reference visual layout"
+                                    className="w-full h-28 object-cover rounded-md"
+                                  />
+                                  <button
+                                    onClick={() => setSelectedImageBase64(null)}
+                                    className="absolute top-3 right-3 bg-red-500/90 text-white p-1 rounded-full hover:bg-red-600 transition-all text-xs w-6 h-6 flex items-center justify-center font-bold"
+                                    title="Remove reference image"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ) : (
+                                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
+                                  <div className="flex flex-col items-center justify-center">
+                                    <span className="text-xs font-semibold text-slate-300">🖼️ Upload screenshot / wireframe</span>
+                                    <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP</span>
+                                  </div>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                  />
+                                </label>
+                              )}
+                            </div>
+          
+                            <button
+                              onClick={() => handleGenerateAi(selectedComponent.props.prompt || '')}
+                              disabled={isGeneratingAi || (!selectedComponent.props.prompt && !selectedImageBase64)}
+                              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                            >
+                              <span>✨</span>
+                              {isGeneratingAi ? 'Generating UI...' : 'Generate with AI'}
+                            </button>
+                            {aiError && (
+                              <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 p-2 rounded-lg">
+                                {aiError}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    })}
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Format</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.format || ''}
-                      onChange={(e) => updateSelectedComponentProp('format', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'SponsorGrid' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.title || ''}
-                      onChange={(e) => updateSelectedComponentProp('title', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'LocationLogistics' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Venue Name</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.venueName || ''}
-                      onChange={(e) => updateSelectedComponentProp('venueName', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Address</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.address || ''}
-                      onChange={(e) => updateSelectedComponentProp('address', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'TournamentList' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.title || ''}
-                      onChange={(e) => updateSelectedComponentProp('title', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
-                    <input
-                      type="text"
-                      value={selectedComponent.props.description || ''}
-                      onChange={(e) => updateSelectedComponentProp('description', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'HeroPremium' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                    <input type="text" value={selectedComponent.props.title || ''} onChange={(e) => updateSelectedComponentProp('title', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
-                    <textarea value={selectedComponent.props.subtitle || ''} onChange={(e) => updateSelectedComponentProp('subtitle', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Overline</label>
-                    <input type="text" value={selectedComponent.props.overline || ''} onChange={(e) => updateSelectedComponentProp('overline', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Event Date</label>
-                    <input type="text" value={selectedComponent.props.eventDate || ''} onChange={(e) => updateSelectedComponentProp('eventDate', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">CTA Text</label>
-                    <input type="text" value={selectedComponent.props.ctaText || ''} onChange={(e) => updateSelectedComponentProp('ctaText', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">CTA Link</label>
-                    <input type="text" value={selectedComponent.props.ctaLink || ''} onChange={(e) => updateSelectedComponentProp('ctaLink', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'FeatureSection' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Eyebrow</label>
-                    <input type="text" value={selectedComponent.props.eyebrow || ''} onChange={(e) => updateSelectedComponentProp('eyebrow', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                    <input type="text" value={selectedComponent.props.title || ''} onChange={(e) => updateSelectedComponentProp('title', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
-                    <textarea value={selectedComponent.props.description || ''} onChange={(e) => updateSelectedComponentProp('description', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none" />
-                  </div>
-                  <div className="my-4 h-px bg-slate-800 w-full"></div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Feature Title</label>
-                    <input type="text" value={selectedComponent.props.featureTitle || ''} onChange={(e) => updateSelectedComponentProp('featureTitle', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Feature Description</label>
-                    <textarea value={selectedComponent.props.featureDescription || ''} onChange={(e) => updateSelectedComponentProp('featureDescription', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Feature Tags (comma separated)</label>
-                    <input type="text" value={(selectedComponent.props.featureTags || []).join(', ')} onChange={(e) => updateSelectedComponentProp('featureTags', e.target.value.split(',').map(s => s.trim()))} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'InfoGrid' && (
-                <div className="space-y-6">
-                  {[0, 1, 2].map(idx => {
-                    const item = (selectedComponent.props.items || [])[idx] || { title: '', subtitle: '', description: '', highlight: false };
-                    return (
-                      <div key={idx} className="space-y-2 border border-slate-700 p-3 rounded-lg bg-slate-950/50">
-                        <div className="font-bold text-xs text-slate-400 mb-2">Item 0{idx + 1}</div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                          <input type="text" value={item.title || ''} onChange={(e) => {
-                            const newItems = [...(selectedComponent.props.items || [])];
-                            if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
-                            newItems[idx].title = e.target.value;
-                            updateSelectedComponentProp('items', newItems);
-                          }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
-                          <input type="text" value={item.subtitle || ''} onChange={(e) => {
-                            const newItems = [...(selectedComponent.props.items || [])];
-                            if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
-                            newItems[idx].subtitle = e.target.value;
-                            updateSelectedComponentProp('items', newItems);
-                          }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
-                          <input type="text" value={item.description || ''} onChange={(e) => {
-                            const newItems = [...(selectedComponent.props.items || [])];
-                            if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
-                            newItems[idx].description = e.target.value;
-                            updateSelectedComponentProp('items', newItems);
-                          }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {selectedComponent.type === 'ImageBanner' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                    <input type="text" value={selectedComponent.props.title || ''} onChange={(e) => updateSelectedComponentProp('title', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Overline</label>
-                    <input type="text" value={selectedComponent.props.overline || ''} onChange={(e) => updateSelectedComponentProp('overline', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Image URL</label>
-                    <input type="text" value={selectedComponent.props.imageUrl || ''} onChange={(e) => updateSelectedComponentProp('imageUrl', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'MarqueeDivider' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Marquee Text</label>
-                    <input type="text" value={selectedComponent.props.text || ''} onChange={(e) => updateSelectedComponentProp('text', e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
-                  </div>
-                </div>
-              )}
-
-              {selectedComponent.type === 'AIDynamicBlock' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-sky-400 mb-1">AI Prompt</label>
-                    <textarea
-                      value={selectedComponent.props.prompt || ''}
-                      onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
-                      placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-20 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-sky-400 mb-1">
-                      Reference Image / Wireframe (Vision Input)
-                    </label>
-                    {selectedImageBase64 ? (
-                      <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-slate-950 p-2 group">
-                        <img
-                          src={selectedImageBase64}
-                          alt="Reference visual layout"
-                          className="w-full h-28 object-cover rounded-md"
-                        />
-                        <button
-                          onClick={() => setSelectedImageBase64(null)}
-                          className="absolute top-3 right-3 bg-red-500/90 text-white p-1 rounded-full hover:bg-red-600 transition-all text-xs w-6 h-6 flex items-center justify-center font-bold"
-                          title="Remove reference image"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
-                        <div className="flex flex-col items-center justify-center">
-                          <span className="text-xs font-semibold text-slate-300">🖼️ Upload screenshot / wireframe</span>
-                          <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP</span>
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => handleGenerateAi(selectedComponent.props.prompt || '')}
-                    disabled={isGeneratingAi || (!selectedComponent.props.prompt && !selectedImageBase64)}
-                    className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-                  >
-                    <span>✨</span>
-                    {isGeneratingAi ? 'Generating UI...' : 'Generate with AI'}
-                  </button>
-                  {aiError && (
-                    <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 p-2 rounded-lg">
-                      {aiError}
-                    </div>
-                  )}
-                  <div className="pt-2 border-t border-slate-800 space-y-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">Section Title (Optional)</label>
-                      <input
-                        type="text"
-                        value={selectedComponent.props.title || ''}
-                        onChange={(e) => updateSelectedComponentProp('title', e.target.value)}
-                        placeholder="e.g. Official Prize Pool"
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">Raw HTML Content</label>
-                      <textarea
-                        value={selectedComponent.props.htmlContent || ''}
-                        onChange={(e) => updateSelectedComponentProp('htmlContent', e.target.value)}
-                        placeholder="Generated HTML content will appear here..."
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-300 focus:outline-none focus:border-sky-500 h-32 resize-y"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
                 </div>
               </div>
               

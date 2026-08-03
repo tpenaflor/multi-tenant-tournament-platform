@@ -18,11 +18,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   ctaLink = "#register",
 }) => {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-950 to-slate-900 border border-sky-500/20 p-8 md:p-12 shadow-2xl text-slate-100 my-4">
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-950 to-tenant-bg border border-tenant-primary/20 p-8 md:p-12 shadow-2xl text-tenant-text my-4">
       <div className="relative z-10 max-w-3xl space-y-4">
-        <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-wider text-sky-400">
-          <span className="bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full">📍 {location}</span>
-          <span className="bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full">📅 {date}</span>
+        <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-wider text-tenant-primary">
+          <span className="bg-tenant-primary/10 border border-tenant-primary/30 px-3 py-1 rounded-full">📍 {location}</span>
+          <span className="bg-tenant-primary/10 border border-tenant-primary/30 px-3 py-1 rounded-full">📅 {date}</span>
         </div>
         <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight">
           {title}
@@ -33,7 +33,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         <div className="pt-2 flex flex-wrap gap-4">
           <a
             href={ctaLink}
-            className="px-8 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold shadow-lg shadow-sky-500/30 transition-all hover:scale-105 active:scale-95"
+            className="px-8 py-3.5 rounded-xl bg-tenant-primary hover:bg-tenant-primary text-white font-bold shadow-lg shadow-tenant-primary/30 transition-all hover:scale-105 active:scale-95"
           >
             {ctaText}
           </a>

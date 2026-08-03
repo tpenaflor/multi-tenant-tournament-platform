@@ -18,6 +18,11 @@ const config: Config = {
           600: '#0284c7',
           700: '#0369a1',
           900: '#0c4a6e',
+        },
+        tenant: {
+          primary: 'rgb(var(--tenant-primary-rgb) / <alpha-value>)',
+          bg: 'rgb(var(--tenant-bg-rgb) / <alpha-value>)',
+          text: 'rgb(var(--tenant-text-rgb) / <alpha-value>)',
         }
       },
     },

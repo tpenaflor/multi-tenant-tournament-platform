@@ -18,7 +18,7 @@ export const FeatureSection: React.FC<FeatureSectionProps> = ({
   featureTags = ["Double Elimination", "Live Scoring", "Cash Prizes"]
 }) => {
   return (
-    <section className="bg-slate-100 rounded-3xl py-16 md:py-24 my-4 border border-slate-200">
+    <section className="bg-tenant-text rounded-3xl py-16 md:py-24 my-4 border border-slate-200">
       <div className="max-w-7xl mx-auto px-6 md:px-12 grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
         
         {/* Left Col - Sticky Title */}
@@ -26,7 +26,7 @@ export const FeatureSection: React.FC<FeatureSectionProps> = ({
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-4">
             {eyebrow}
           </p>
-          <h2 className="font-black text-5xl sm:text-6xl tracking-tight leading-[0.95] text-slate-900">
+          <h2 className="font-black text-5xl sm:text-6xl tracking-tight leading-[0.95] text-tenant-bg">
             {title}
           </h2>
         </div>
@@ -38,7 +38,7 @@ export const FeatureSection: React.FC<FeatureSectionProps> = ({
           </p>
 
           {/* Feature Highlight Card */}
-          <div className="mt-12 overflow-hidden rounded-3xl bg-slate-900 p-8 sm:p-10 text-white shadow-2xl">
+          <div className="mt-12 overflow-hidden rounded-3xl bg-tenant-bg p-8 sm:p-10 text-white shadow-2xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-rose-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" aria-hidden="true"></span>
               New division
@@ -54,7 +54,7 @@ export const FeatureSection: React.FC<FeatureSectionProps> = ({
               {featureTags.map((tag, idx) => (
                 <li 
                   key={idx} 
-                  className={`rounded-full px-4 py-2 text-xs font-bold ${idx === 0 ? 'bg-amber-400 text-slate-900' : 'border border-slate-700 text-slate-300'}`}
+                  className={`rounded-full px-4 py-2 text-xs font-bold ${idx === 0 ? 'bg-amber-400 text-tenant-bg' : 'border border-slate-700 text-slate-300'}`}
                 >
                   {tag}
                 </li>

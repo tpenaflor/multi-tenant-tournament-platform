@@ -8,6 +8,7 @@ import * as actions from '../actions';
 jest.mock('../actions', () => ({
   savePageLayout: jest.fn(),
   generateAiComponentAction: jest.fn(),
+  saveTenantTheme: jest.fn(),
 }));
 
 describe('BuilderClient', () => {
@@ -103,6 +104,7 @@ describe('BuilderClient', () => {
 
   it('calls savePageLayout when save is clicked', async () => {
     (actions.savePageLayout as jest.Mock).mockResolvedValue({ success: true });
+    (actions.saveTenantTheme as jest.Mock).mockResolvedValue({ success: true });
     
     render(<BuilderClient initialComponents={initialComponents} tenantSlug="bay-area-pickleball" />);
     
@@ -115,7 +117,7 @@ describe('BuilderClient', () => {
       expect(actions.savePageLayout).toHaveBeenCalledTimes(1);
     });
     
-    expect(screen.getByText('Page Layout Saved to Database!')).toBeInTheDocument();
+    expect(await screen.findByText('Layout and Theme Saved!')).toBeInTheDocument();
   });
 
   it('removes a component when trash icon is clicked', () => {
@@ -141,8 +143,7 @@ describe('BuilderClient', () => {
     fireEvent.click(heroBannerTitle);
 
     // Find the title input and change it
-    const inputs = screen.getAllByRole('textbox');
-    const titleInput = inputs[0];
+    const titleInput = screen.getByLabelText('Title');
     fireEvent.change(titleInput, { target: { value: 'New Updated Title' } });
 
     // The canvas should reflect the new title

@@ -57,6 +57,40 @@ export async function savePageLayout(components: any[], tournamentId?: string) {
   }
 }
 
+export async function saveTenantTheme(theme: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new Error('Unauthorized');
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email! },
+      include: { organization: true },
+    });
+
+    if (!dbUser || !dbUser.organization) {
+      throw new Error('User is not assigned to an organization');
+    }
+
+    const org = dbUser.organization;
+
+    await prisma.organization.update({
+      where: { id: org.id },
+      data: { theme },
+    });
+
+    revalidatePath(`/tenant/${org.slug}`);
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error saving tenant theme:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function generateAiComponentAction(prompt?: string, imageBase64?: string) {
   if (!isAiComponentEnabled()) {
     return {

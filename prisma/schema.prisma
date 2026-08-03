@@ -18,6 +18,7 @@ model Organization {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   isActive    Boolean      @default(true)
+  theme       String?      // Stores JSON string of theme configuration (e.g. primaryColor, backgroundColor)
 
   users       User[]
   tournaments Tournament[]

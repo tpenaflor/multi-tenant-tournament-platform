@@ -54,19 +54,19 @@ export function sanitizeAndInterpolateHtml(
   if (sanitized.includes('{{tournamentsCards}}')) {
     const cardsHtml = tournaments.length > 0
       ? tournaments.map((t: any) => `
-        <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl space-y-3 hover:border-sky-500/50 transition-all">
+        <div class="bg-tenant-bg/90 border border-slate-800 p-5 rounded-2xl space-y-3 hover:border-tenant-primary/50 transition-all">
           <div class="flex items-center justify-between">
-            <span class="px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-[10px] font-bold uppercase tracking-wider">${t.status || 'Active'}</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-tenant-primary/10 border border-tenant-primary/30 text-tenant-primary text-[10px] font-bold uppercase tracking-wider">${t.status || 'Active'}</span>
             <span class="text-xs text-slate-400 font-mono">${t.startDate ? new Date(t.startDate).toLocaleDateString() : 'TBA'}</span>
           </div>
           <h4 class="text-lg font-bold text-white">${t.name}</h4>
           <p class="text-xs text-slate-400 leading-relaxed">${t.location || 'Local Sports Complex'}</p>
-          <a href="${dynamicData?.basePath ? `${dynamicData.basePath}/tournaments/${t.slug || t.id}` : '#'}" class="inline-block w-full text-center py-2 rounded-xl bg-slate-800 hover:bg-sky-500 hover:text-slate-950 text-xs font-bold text-slate-200 transition-all">
+          <a href="${dynamicData?.basePath ? `${dynamicData.basePath}/tournaments/${t.slug || t.id}` : '#'}" class="inline-block w-full text-center py-2 rounded-xl bg-slate-800 hover:bg-tenant-primary hover:text-tenant-bg text-xs font-bold text-slate-200 transition-all">
             View Live Bracket →
           </a>
         </div>
       `).join('')
-      : `<div class="p-6 rounded-xl bg-slate-900 border border-slate-800 text-center text-slate-400 text-sm">No active tournaments scheduled.</div>`;
+      : `<div class="p-6 rounded-xl bg-tenant-bg border border-slate-800 text-center text-slate-400 text-sm">No active tournaments scheduled.</div>`;
 
     sanitized = sanitized.replace(/\{\{\s*tournamentsCards\s*\}\}/g, cardsHtml);
   }
@@ -86,8 +86,8 @@ export const AIDynamicBlock: React.FC<AIDynamicBlockProps> = ({
 
   if (!htmlContent) {
     return (
-      <div className="w-full rounded-2xl bg-slate-900/90 border-2 border-dashed border-sky-500/40 p-8 text-center space-y-3 shadow-xl backdrop-blur-sm">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold uppercase tracking-wider">
+      <div className="w-full rounded-2xl bg-tenant-bg/90 border-2 border-dashed border-tenant-primary/40 p-8 text-center space-y-3 shadow-xl backdrop-blur-sm">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tenant-primary/10 border border-tenant-primary/30 text-tenant-primary text-xs font-semibold uppercase tracking-wider">
           <span>✨ AI Custom Component</span>
         </div>
         <h3 className="text-xl font-bold text-white">
@@ -113,11 +113,11 @@ export const AIDynamicBlock: React.FC<AIDynamicBlockProps> = ({
   return (
     <section className="w-full relative group">
       {/* Subtle indicator bar for AI generated components */}
-      <div className="w-full rounded-2xl overflow-hidden bg-slate-900/60 border border-slate-800/80 p-6 shadow-2xl backdrop-blur-sm">
+      <div className="w-full rounded-2xl overflow-hidden bg-tenant-bg/60 border border-slate-800/80 p-6 shadow-2xl backdrop-blur-sm">
         {title && (
           <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-[10px] font-mono uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tenant-primary/10 border border-tenant-primary/20 text-tenant-primary text-[10px] font-mono uppercase tracking-wider">
               ✨ Live AI Component
             </span>
           </div>

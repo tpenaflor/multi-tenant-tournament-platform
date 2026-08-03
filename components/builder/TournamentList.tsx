@@ -54,7 +54,7 @@ export const TournamentList: React.FC<TournamentListProps> = ({
   ];
 
   return (
-    <div className="my-8 rounded-2xl bg-slate-900 border border-slate-800 p-8 shadow-xl text-slate-100">
+    <div className="my-8 rounded-2xl bg-tenant-bg border border-slate-800 p-8 shadow-xl text-tenant-text">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-extrabold text-white">{title}</h2>
         {description && <p className="text-slate-400 mt-2">{description}</p>}
@@ -62,16 +62,16 @@ export const TournamentList: React.FC<TournamentListProps> = ({
 
       <div className="grid md:grid-cols-3 gap-6">
         {displayTournaments.map(t => (
-          <div key={t.id} className="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+          <div key={t.id} className="bg-tenant-bg border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-3">
-                <span className="text-xs font-bold text-sky-400 uppercase flex items-center gap-1">
+                <span className="text-xs font-bold text-tenant-primary uppercase flex items-center gap-1">
                   <TrophyIcon size={12} /> {t.sport}
                 </span>
                 <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
                   t.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
                   t.status === 'Completed' ? 'bg-slate-800 text-slate-400 border-slate-700' :
-                  'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                  'bg-tenant-primary/10 text-tenant-primary border-tenant-primary/30'
                 }`}>
                   {t.status}
                 </span>

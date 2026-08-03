@@ -18,14 +18,14 @@ export const HeroPremium: React.FC<HeroPremiumProps> = ({
   eventDate = "November 15, 2026"
 }) => {
   return (
-    <section className="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl my-4 text-white">
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900 via-slate-900 to-slate-900" aria-hidden="true"></div>
+    <section className="relative overflow-hidden bg-tenant-bg border border-slate-800 rounded-3xl my-4 text-white">
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900 via-tenant-bg to-tenant-bg" aria-hidden="true"></div>
       <div className="relative z-10 grid gap-12 py-16 px-8 md:px-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
         
         {/* Left Content */}
         <div className="max-w-4xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-sky-400 backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_12px_#38bdf8]"></span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-tenant-primary backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-tenant-primary shadow-[0_0_12px_#38bdf8]"></span>
             The next chapter
           </div>
           <p className="mt-8 text-xs font-bold uppercase tracking-[0.25em] text-amber-400">
@@ -38,7 +38,7 @@ export const HeroPremium: React.FC<HeroPremiumProps> = ({
             {subtitle}
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
-            <a href={ctaLink} className="px-8 py-3.5 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-sm uppercase tracking-wider transition-all">
+            <a href={ctaLink} className="px-8 py-3.5 rounded-full bg-tenant-primary hover:bg-tenant-primary text-tenant-bg font-extrabold text-sm uppercase tracking-wider transition-all">
               {ctaText} <span aria-hidden="true">↘</span>
             </a>
             <a href="#" className="px-8 py-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm uppercase tracking-wider transition-all">
@@ -55,7 +55,7 @@ export const HeroPremium: React.FC<HeroPremiumProps> = ({
           </div>
           <div className="my-8">
             <span className="font-black text-7xl md:text-8xl leading-none tracking-tighter text-white">Q4</span>
-            <div className="mt-4 h-px bg-gradient-to-r from-sky-500 via-amber-400 to-transparent"></div>
+            <div className="mt-4 h-px bg-gradient-to-r from-tenant-primary via-amber-400 to-transparent"></div>
           </div>
           <p className="text-2xl font-black tracking-tight text-white">
             {eventDate}

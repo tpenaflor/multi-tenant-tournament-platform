@@ -14,13 +14,13 @@ export const LocationLogistics: React.FC<LocationLogisticsProps> = ({
   facilityRules = "Non-marking court shoes required. Warmup courts open 45 minutes prior to first match.",
 }) => {
   return (
-    <div className="my-6 rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl text-slate-100 grid md:grid-cols-2 gap-6">
+    <div className="my-6 rounded-2xl bg-tenant-bg border border-slate-800 p-6 shadow-xl text-tenant-text grid md:grid-cols-2 gap-6">
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
           <span>📍 Venue & Location</span>
         </h3>
         <div>
-          <div className="font-bold text-lg text-sky-400">{venueName}</div>
+          <div className="font-bold text-lg text-tenant-primary">{venueName}</div>
           <div className="text-slate-300 text-sm mt-0.5">{address}</div>
         </div>
         <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/80 space-y-1">

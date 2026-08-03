@@ -86,5 +86,5 @@ export default async function BuilderPage({ searchParams }: { searchParams: Prom
     orderBy: { createdAt: 'desc' }
   });
 
-  return <BuilderClient initialComponents={initialComponents} tenantSlug={org.slug} tournamentId={tournamentId} tournamentSlug={tournamentSlug} tournaments={tournaments} />;
+  return <BuilderClient initialComponents={initialComponents} tenantSlug={org.slug} tournamentId={tournamentId} tournamentSlug={tournamentSlug} tournaments={tournaments} initialTheme={org.theme} />;
 }

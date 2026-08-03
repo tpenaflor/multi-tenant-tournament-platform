@@ -25,10 +25,10 @@ export const InfoGrid: React.FC<InfoGridProps> = ({
               </span>
             )}
           </div>
-          <p className="mt-8 font-black text-2xl tracking-tight text-slate-900">
+          <p className="mt-8 font-black text-2xl tracking-tight text-tenant-bg">
             {item.title}
           </p>
-          <p className="mt-2 text-sm font-bold text-slate-900">
+          <p className="mt-2 text-sm font-bold text-tenant-bg">
             {item.subtitle}
           </p>
           <p className="mt-1 text-xs font-medium text-slate-500">
