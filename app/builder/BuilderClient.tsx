@@ -47,7 +47,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [componentSearchQuery, setComponentSearchQuery] = useState('');
-  
+
   // Theme state
   const [theme, setTheme] = useState(() => {
     if (initialTheme) {
@@ -111,13 +111,13 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const handleSave = async () => {
     setIsSaving(true);
     setSavedStatus(null);
-    
+
     // Save page layout
     const response = await savePageLayout(components, tournamentId);
-    
+
     // Save theme
     const themeResponse = await saveTenantTheme(JSON.stringify(theme));
-    
+
     setIsSaving(false);
     if (response.success && themeResponse.success) {
       setSavedStatus('Layout and Theme Saved!');
@@ -162,13 +162,13 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         prev.map((c) =>
           c.id === selectedComponentId
             ? {
-                ...c,
-                props: {
-                  ...c.props,
-                  prompt: promptText,
-                  htmlContent: response.htmlContent,
-                },
-              }
+              ...c,
+              props: {
+                ...c.props,
+                prompt: promptText,
+                htmlContent: response.htmlContent,
+              },
+            }
             : c
         )
       );
@@ -267,8 +267,8 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           >
             <SaveIcon size={16} />
           </button>
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
           >
             {isMobileMenuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
@@ -340,7 +340,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   <PanelLeftCloseIcon size={16} />
                 </button>
               </div>
-              
+
               <button
                 onClick={() => setShowTemplateModal(true)}
                 className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 transition-all group flex items-center justify-between mb-4"
@@ -353,9 +353,9 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
 
               <div className="mb-4 relative">
                 <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input 
-                  type="text" 
-                  placeholder="Search components..." 
+                <input
+                  type="text"
+                  placeholder="Search components..."
                   value={componentSearchQuery}
                   onChange={(e) => setComponentSearchQuery(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 placeholder-slate-500"
@@ -363,8 +363,8 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               </div>
 
               <div className="space-y-2.5">
-                {COMPONENT_SCHEMAS.filter(c => 
-                  c.title.toLowerCase().includes(componentSearchQuery.toLowerCase()) || 
+                {COMPONENT_SCHEMAS.filter(c =>
+                  c.title.toLowerCase().includes(componentSearchQuery.toLowerCase()) ||
                   c.description.toLowerCase().includes(componentSearchQuery.toLowerCase())
                 ).filter(c => {
                   if (c.requiresTournament && !tournamentId) return false;
@@ -374,7 +374,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 }).map((c, index, array) => {
                   // Render category headers if it's the first item of that category in the filtered list
                   const isFirstPremium = c.isPremium && (index === 0 || !array[index - 1].isPremium);
-                  
+
                   return (
                     <React.Fragment key={c.id}>
                       {isFirstPremium && (
@@ -471,74 +471,74 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         {/* Theme Settings Modal */}
         {showThemeModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <div 
+            <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowThemeModal(false)}
             ></div>
-            
+
             <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
                 <div className="flex items-center gap-2">
                   <PaintbrushIcon size={18} className="text-sky-400" />
                   <h3 className="font-bold text-white text-sm">Tenant Global Theme</h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowThemeModal(false)}
                   className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   <XIcon size={18} />
                 </button>
               </div>
-              
+
               <div className="p-5 overflow-y-auto space-y-5">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Primary Color</label>
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="color" 
-                      value={theme.primaryColor || '#0ea5e9'} 
+                    <input
+                      type="color"
+                      value={theme.primaryColor || '#0ea5e9'}
                       onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700" 
+                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700"
                     />
-                    <input 
-                      type="text" 
-                      value={theme.primaryColor || '#0ea5e9'} 
+                    <input
+                      type="text"
+                      value={theme.primaryColor || '#0ea5e9'}
                       onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase" 
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Background Color</label>
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="color" 
-                      value={theme.backgroundColor || '#020617'} 
+                    <input
+                      type="color"
+                      value={theme.backgroundColor || '#020617'}
                       onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700" 
+                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700"
                     />
-                    <input 
-                      type="text" 
-                      value={theme.backgroundColor || '#020617'} 
+                    <input
+                      type="text"
+                      value={theme.backgroundColor || '#020617'}
                       onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase" 
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Text Color</label>
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="color" 
-                      value={theme.textColor || '#f8fafc'} 
+                    <input
+                      type="color"
+                      value={theme.textColor || '#f8fafc'}
                       onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700" 
+                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700"
                     />
-                    <input 
-                      type="text" 
-                      value={theme.textColor || '#f8fafc'} 
+                    <input
+                      type="text"
+                      value={theme.textColor || '#f8fafc'}
                       onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase" 
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
                     />
                   </div>
                 </div>
@@ -546,9 +546,9 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   Note: Theme changes will only apply once you click "Save Layout" in the top bar. They will then be visible across all pages of your tenant site.
                 </div>
               </div>
-              
+
               <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end shrink-0">
-                <button 
+                <button
                   onClick={() => setShowThemeModal(false)}
                   className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-md"
                 >
@@ -561,208 +561,208 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         {/* Properties Modal */}
         {selectedComponent && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <div 
+            <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setSelectedComponentId(null)}
             ></div>
-            
+
             <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
                 <div className="flex items-center gap-2">
                   <SettingsIcon size={18} className="text-sky-400" />
                   <h3 className="font-bold text-white text-sm">Edit Component Properties</h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setSelectedComponentId(null)}
                   className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   <XIcon size={18} />
                 </button>
               </div>
-              
+
               <div className="p-5 overflow-y-auto">
                 <div className="space-y-4">
-              <div className="bg-slate-800/80 border border-slate-700 rounded-lg p-3 mb-6">
-                <span className="text-xs text-slate-400 uppercase tracking-widest">Editing</span>
-                <div className="font-bold text-sky-400">{selectedComponent.type}</div>
-                <div className="text-xs text-slate-500 font-mono mt-1">{selectedComponent.id}</div>
-              </div>
-
-                            {/* Dynamic Form based on component type */}
-              {(() => {
-                const schema = COMPONENT_SCHEMAS.find(s => s.id === selectedComponent.type);
-                if (!schema) return null;
-
-                return (
-                  <div className="space-y-4">
-                    {schema.fields.map(field => {
-                      if (field.type === 'text') {
-                        return (
-                          <div key={field.name}>
-                            <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
-                            <input
-                              id={`field-${field.name}`}
-                              type="text"
-                              value={selectedComponent.props[field.name] || ''}
-                              onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                            />
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'textarea') {
-                        return (
-                          <div key={field.name}>
-                            <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
-                            <textarea
-                              id={`field-${field.name}`}
-                              value={selectedComponent.props[field.name] || ''}
-                              onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none"
-                            />
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'tags') {
-                        return (
-                          <div key={field.name}>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
-                            <input
-                              type="text"
-                              value={(selectedComponent.props[field.name] || []).join(', ')}
-                              onChange={(e) => updateSelectedComponentProp(field.name, e.target.value.split(',').map(s => s.trim()))}
-                              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                            />
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'info-grid-items') {
-                        return (
-                          <div key={field.name} className="space-y-6">
-                            {[0, 1, 2].map(idx => {
-                              const item = (selectedComponent.props[field.name] || [])[idx] || { title: '', subtitle: '', description: '', highlight: false };
-                              return (
-                                <div key={idx} className="space-y-2 border border-slate-700 p-3 rounded-lg bg-slate-950/50">
-                                  <div className="font-bold text-xs text-slate-400 mb-2">Item 0{idx + 1}</div>
-                                  <div>
-                                    <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
-                                    <input type="text" value={item.title || ''} onChange={(e) => {
-                                      const newItems = [...(selectedComponent.props[field.name] || [])];
-                                      if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
-                                      newItems[idx].title = e.target.value;
-                                      updateSelectedComponentProp(field.name, newItems);
-                                    }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
-                                    <input type="text" value={item.subtitle || ''} onChange={(e) => {
-                                      const newItems = [...(selectedComponent.props[field.name] || [])];
-                                      if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
-                                      newItems[idx].subtitle = e.target.value;
-                                      updateSelectedComponentProp(field.name, newItems);
-                                    }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
-                                    <input type="text" value={item.description || ''} onChange={(e) => {
-                                      const newItems = [...(selectedComponent.props[field.name] || [])];
-                                      if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
-                                      newItems[idx].description = e.target.value;
-                                      updateSelectedComponentProp(field.name, newItems);
-                                    }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'ai-prompt') {
-                        return (
-                          <div key={field.name} className="space-y-4">
-                            <div>
-                              <label className="block text-xs font-semibold text-sky-400 mb-1">AI Prompt</label>
-                              <textarea
-                                value={selectedComponent.props.prompt || ''}
-                                onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
-                                placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
-                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-20 resize-none"
-                              />
-                            </div>
-          
-                            <div>
-                              <label className="block text-xs font-semibold text-sky-400 mb-1">
-                                Reference Image / Wireframe (Vision Input)
-                              </label>
-                              {selectedImageBase64 ? (
-                                <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-slate-950 p-2 group">
-                                  <img
-                                    src={selectedImageBase64}
-                                    alt="Reference visual layout"
-                                    className="w-full h-28 object-cover rounded-md"
-                                  />
-                                  <button
-                                    onClick={() => setSelectedImageBase64(null)}
-                                    className="absolute top-3 right-3 bg-red-500/90 text-white p-1 rounded-full hover:bg-red-600 transition-all text-xs w-6 h-6 flex items-center justify-center font-bold"
-                                    title="Remove reference image"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ) : (
-                                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
-                                  <div className="flex flex-col items-center justify-center">
-                                    <span className="text-xs font-semibold text-slate-300">🖼️ Upload screenshot / wireframe</span>
-                                    <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP</span>
-                                  </div>
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                  />
-                                </label>
-                              )}
-                            </div>
-          
-                            <button
-                              onClick={() => handleGenerateAi(selectedComponent.props.prompt || '')}
-                              disabled={isGeneratingAi || (!selectedComponent.props.prompt && !selectedImageBase64)}
-                              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-                            >
-                              <span>✨</span>
-                              {isGeneratingAi ? 'Generating UI...' : 'Generate with AI'}
-                            </button>
-                            {aiError && (
-                              <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 p-2 rounded-lg">
-                                {aiError}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }
-                      
-                      return null;
-                    })}
+                  <div className="bg-slate-800/80 border border-slate-700 rounded-lg p-3 mb-6">
+                    <span className="text-xs text-slate-400 uppercase tracking-widest">Editing</span>
+                    <div className="font-bold text-sky-400">{selectedComponent.type}</div>
+                    <div className="text-xs text-slate-500 font-mono mt-1">{selectedComponent.id}</div>
                   </div>
-                );
-              })()}
+
+                  {/* Dynamic Form based on component type */}
+                  {(() => {
+                    const schema = COMPONENT_SCHEMAS.find(s => s.id === selectedComponent.type);
+                    if (!schema) return null;
+
+                    return (
+                      <div className="space-y-4">
+                        {schema.fields.map(field => {
+                          if (field.type === 'text') {
+                            return (
+                              <div key={field.name}>
+                                <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                <input
+                                  id={`field-${field.name}`}
+                                  type="text"
+                                  value={selectedComponent.props[field.name] || ''}
+                                  onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                                />
+                              </div>
+                            );
+                          }
+
+                          if (field.type === 'textarea') {
+                            return (
+                              <div key={field.name}>
+                                <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                <textarea
+                                  id={`field-${field.name}`}
+                                  value={selectedComponent.props[field.name] || ''}
+                                  onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none"
+                                />
+                              </div>
+                            );
+                          }
+
+                          if (field.type === 'tags') {
+                            return (
+                              <div key={field.name}>
+                                <label className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                <input
+                                  type="text"
+                                  value={(selectedComponent.props[field.name] || []).join(', ')}
+                                  onChange={(e) => updateSelectedComponentProp(field.name, e.target.value.split(',').map(s => s.trim()))}
+                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                                />
+                              </div>
+                            );
+                          }
+
+                          if (field.type === 'info-grid-items') {
+                            return (
+                              <div key={field.name} className="space-y-6">
+                                {[0, 1, 2].map(idx => {
+                                  const item = (selectedComponent.props[field.name] || [])[idx] || { title: '', subtitle: '', description: '', highlight: false };
+                                  return (
+                                    <div key={idx} className="space-y-2 border border-slate-700 p-3 rounded-lg bg-slate-950/50">
+                                      <div className="font-bold text-xs text-slate-400 mb-2">Item 0{idx + 1}</div>
+                                      <div>
+                                        <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                                        <input type="text" value={item.title || ''} onChange={(e) => {
+                                          const newItems = [...(selectedComponent.props[field.name] || [])];
+                                          if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                                          newItems[idx].title = e.target.value;
+                                          updateSelectedComponentProp(field.name, newItems);
+                                        }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
+                                        <input type="text" value={item.subtitle || ''} onChange={(e) => {
+                                          const newItems = [...(selectedComponent.props[field.name] || [])];
+                                          if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                                          newItems[idx].subtitle = e.target.value;
+                                          updateSelectedComponentProp(field.name, newItems);
+                                        }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                                        <input type="text" value={item.description || ''} onChange={(e) => {
+                                          const newItems = [...(selectedComponent.props[field.name] || [])];
+                                          if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
+                                          newItems[idx].description = e.target.value;
+                                          updateSelectedComponentProp(field.name, newItems);
+                                        }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          }
+
+                          if (field.type === 'ai-prompt') {
+                            return (
+                              <div key={field.name} className="space-y-4">
+                                <div>
+                                  <label className="block text-xs font-semibold text-sky-400 mb-1">AI Prompt</label>
+                                  <textarea
+                                    value={selectedComponent.props.prompt || ''}
+                                    onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
+                                    placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
+                                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-20 resize-none"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-semibold text-sky-400 mb-1">
+                                    Reference Image / Wireframe (Vision Input)
+                                  </label>
+                                  {selectedImageBase64 ? (
+                                    <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-slate-950 p-2 group">
+                                      <img
+                                        src={selectedImageBase64}
+                                        alt="Reference visual layout"
+                                        className="w-full h-28 object-cover rounded-md"
+                                      />
+                                      <button
+                                        onClick={() => setSelectedImageBase64(null)}
+                                        className="absolute top-3 right-3 bg-red-500/90 text-white p-1 rounded-full hover:bg-red-600 transition-all text-xs w-6 h-6 flex items-center justify-center font-bold"
+                                        title="Remove reference image"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
+                                      <div className="flex flex-col items-center justify-center">
+                                        <span className="text-xs font-semibold text-slate-300">🖼️ Upload screenshot / wireframe</span>
+                                        <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP</span>
+                                      </div>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                      />
+                                    </label>
+                                  )}
+                                </div>
+
+                                <button
+                                  onClick={() => handleGenerateAi(selectedComponent.props.prompt || '')}
+                                  disabled={isGeneratingAi || (!selectedComponent.props.prompt && !selectedImageBase64)}
+                                  className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                                >
+                                  <span>✨</span>
+                                  {isGeneratingAi ? 'Generating UI...' : 'Generate with AI'}
+                                </button>
+                                {aiError && (
+                                  <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 p-2 rounded-lg">
+                                    {aiError}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+
+                          return null;
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
-              
+
               <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-between items-center shrink-0">
-                <button 
+                <button
                   onClick={(e) => removeComponent(selectedComponent.id, e)}
                   className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
                 >
                   <TrashIcon size={16} />
                   Remove
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedComponentId(null)}
                   className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-md"
                 >
@@ -776,28 +776,28 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
         {/* Template Modal */}
         {showTemplateModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <div 
+            <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowTemplateModal(false)}
             ></div>
-            
+
             <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
                 <div className="flex items-center gap-2">
                   <LayoutIcon size={18} className="text-sky-400" />
                   <h3 className="font-bold text-white text-sm">Choose a Template</h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowTemplateModal(false)}
                   className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   <XIcon size={18} />
                 </button>
               </div>
-              
+
               <div className="p-6 overflow-y-auto grid gap-6 sm:grid-cols-2">
                 {TOURNAMENT_TEMPLATES.map((template) => (
-                  <div 
+                  <div
                     key={template.id}
                     onClick={() => handleApplyTemplate(template)}
                     className="border border-slate-700 bg-slate-800/50 rounded-xl p-5 hover:border-sky-500 cursor-pointer transition-all hover:bg-slate-800 hover:-translate-y-1 shadow-md"
