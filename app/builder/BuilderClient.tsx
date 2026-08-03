@@ -543,7 +543,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   </div>
                 </div>
                 <div className="text-xs text-yellow-500 mt-2 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
-                  Note: Theme changes will only apply once you click "Save Layout" in the top bar. They will then be visible across all pages of your tenant site.
+                  Note: Theme changes will only apply once you click <strong>Save Layout</strong> in the top bar. They will then be visible across all pages of your tenant site.
                 </div>
               </div>
 
