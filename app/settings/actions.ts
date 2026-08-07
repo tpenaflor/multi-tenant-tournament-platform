@@ -37,7 +37,7 @@ export async function updateProfile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user?.email) {
-    return redirect('/login');
+    return redirect('/');
   }
 
   try {

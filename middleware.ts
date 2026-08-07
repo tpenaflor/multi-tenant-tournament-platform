@@ -15,6 +15,11 @@ export const config = {
 
 export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
+  
+  if (url.pathname.startsWith('/login')) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
+  
   const rawHost = req.headers.get('host') || url.host || '';
   const host = rawHost.toLowerCase();
   const hostWithoutPort = host.split(':')[0];
@@ -45,7 +50,6 @@ export default function middleware(req: NextRequest) {
   // System paths that should ALWAYS be served directly on main platform logic
   const isSystemPath = 
     url.pathname.startsWith('/platform-admin') ||
-    url.pathname.startsWith('/login') ||
     url.pathname.startsWith('/dashboard') ||
     url.pathname.startsWith('/builder') ||
     url.pathname.startsWith('/settings') ||

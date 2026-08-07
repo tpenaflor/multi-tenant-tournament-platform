@@ -20,7 +20,7 @@ import { ComponentItem, renderBuilderComponent, COMPONENT_SCHEMAS } from '@/comp
 import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon, MenuIcon, XIcon, SearchIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
 import { savePageLayout, generateAiComponentAction, saveTenantTheme } from './actions';
-import { logout } from '@/app/login/actions';
+import { logout } from '@/app/actions/auth';
 import { isAiComponentEnabled } from '@/lib/featureFlags';
 import { TOURNAMENT_TEMPLATES, TournamentTemplate } from '@/lib/templates';
 

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
 import { renderBuilderComponent, ComponentItem } from '@/components/builder/ComponentRegistry';
 import { headers } from 'next/headers';
+import TenantLoginHeader from '@/components/auth/TenantLoginHeader';
 
 interface TenantPageProps {
   params: Promise<{
@@ -98,7 +99,8 @@ export default async function TenantPage({ params }: TenantPageProps) {
     const basePath = isMainDomain ? `/tenant/${tenantSlug}` : '';
 
     return (
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen pt-20 p-8">
+        {!user && <TenantLoginHeader tenantName={org.name} tenantSlug={tenantSlug} />}
         <div className="max-w-5xl mx-auto space-y-4">
           {components.map((comp) => renderBuilderComponent(comp, { tournaments, tenantName: org.name, basePath }))}
         </div>
@@ -116,7 +118,8 @@ export default async function TenantPage({ params }: TenantPageProps) {
 
   // Fallback to the default static page if no layout is found in the DB
   return (
-    <main className="min-h-screen p-8 flex flex-col items-center justify-center">
+    <main className="min-h-screen pt-20 p-8 flex flex-col items-center justify-center">
+      {!user && <TenantLoginHeader tenantName={org.name} tenantSlug={tenantSlug} />}
       <div className="max-w-3xl w-full text-center space-y-6 bg-tenant-bg p-10 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-sm mix-blend-screen">
         <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold tracking-wide uppercase">
           Tenant Domain Active

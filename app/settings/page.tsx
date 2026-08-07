@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { updatePassword, updateProfile } from './actions';
-import { logout } from '@/app/login/actions';
+import { logout } from '@/app/actions/auth';
 import { CheckCircleIcon } from '@/components/ui/icons';
 
 export default async function SettingsPage(props: {
@@ -14,7 +14,7 @@ export default async function SettingsPage(props: {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user?.email) {
-    redirect('/login');
+    redirect('/');
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -25,7 +25,7 @@ export default async function SettingsPage(props: {
   });
 
   if (!dbUser) {
-    redirect('/login');
+    redirect('/');
   }
 
   const error = searchParams.error as string;

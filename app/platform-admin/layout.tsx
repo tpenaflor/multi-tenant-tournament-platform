@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { logout } from '@/app/login/actions';
+import { logout } from '@/app/actions/auth';
 import { SettingsIcon } from '@/components/ui/icons';
 
 export default async function PlatformAdminLayout({ children }: { children: ReactNode }) {
@@ -11,7 +11,7 @@ export default async function PlatformAdminLayout({ children }: { children: Reac
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
   
   if (error || !authUser?.email) {
-    redirect('/login');
+    redirect('/');
   }
 
   const user = await prisma.user.findUnique({

@@ -5,6 +5,11 @@ import { getOrganizations, addOrganization, toggleOrganizationStatus } from '../
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+jest.mock('@/lib/supabase', () => ({
+  supabaseAdmin: { auth: { admin: { createUser: jest.fn().mockResolvedValue({ error: null }) } } },
+  supabase: { auth: { signUp: jest.fn().mockResolvedValue({ error: null }) } }
+}));
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     organization: {

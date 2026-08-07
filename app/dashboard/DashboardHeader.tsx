@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { MenuIcon, XIcon } from '@/components/ui/icons';
-import { logout } from '@/app/login/actions';
+import { logout } from '@/app/actions/auth';
 
 export default function DashboardHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

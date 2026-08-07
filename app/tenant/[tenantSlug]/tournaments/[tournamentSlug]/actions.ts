@@ -10,7 +10,7 @@ export async function signUpForTournament(tournamentId: string, currentPath: str
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    redirect('/');
   }
 
   const dbUser = await prisma.user.findUnique({

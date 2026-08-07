@@ -16,7 +16,7 @@ export default async function ManageTournamentPage({ params }: ManageTournamentP
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect('/login');
+  if (!user) redirect('/');
 
   const org = await prisma.organization.findFirst({
     where: {

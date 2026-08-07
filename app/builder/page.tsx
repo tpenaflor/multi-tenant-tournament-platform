@@ -10,7 +10,7 @@ export default async function BuilderPage({ searchParams }: { searchParams: Prom
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    redirect('/');
   }
 
   // Fetch the user's organization

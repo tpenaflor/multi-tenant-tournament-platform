@@ -18,7 +18,7 @@ export async function login(formData: FormData) {
 
   if (error) {
     // Pass the actual Supabase auth error message to the UI
-    return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    return redirect(`/?error=${encodeURIComponent(error.message)}`);
   }
 
   // Find user in Prisma to determine their global role
@@ -40,7 +40,7 @@ export async function login(formData: FormData) {
   }
 
   if (!user) {
-    return redirect('/login?error=User%20profile%20not%20found%20in%20database');
+    return redirect('/?error=User%20profile%20not%20found%20in%20database');
   }
 
   // Fallback
@@ -67,7 +67,7 @@ export async function signInWithGoogle(tenantSlug?: string) {
   });
 
   if (error) {
-    return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    return redirect(`/?error=${encodeURIComponent(error.message)}`);
   }
 
   if (data.url) {
@@ -78,5 +78,5 @@ export async function signInWithGoogle(tenantSlug?: string) {
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  return redirect('/login');
+  return redirect('/');
 }
