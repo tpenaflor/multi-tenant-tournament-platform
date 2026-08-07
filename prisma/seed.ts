@@ -26,7 +26,6 @@ async function main() {
     create: {
       email: 'admin@bracket.sports',
       name: 'Platform Admin',
-      role: 'PLATFORM_ADMIN',
     },
   })
   console.log({ platformAdmin })
@@ -50,11 +49,25 @@ async function main() {
     create: {
       email: 'organizer@demo.com',
       name: 'Demo Organizer',
-      role: 'ORGANIZER',
-      organizationId: org.id,
     },
   })
   console.log({ organizer })
+
+  const orgMember = await prisma.organizationMember.upsert({
+    where: {
+      userId_organizationId: {
+        userId: organizer.id,
+        organizationId: org.id
+      }
+    },
+    update: {},
+    create: {
+      userId: organizer.id,
+      organizationId: org.id,
+      role: 'ORGANIZER'
+    }
+  })
+  console.log({ orgMember })
 
   // 4. Create an Event (Tournament) for the Tenant
   const tournament = await prisma.tournament.upsert({

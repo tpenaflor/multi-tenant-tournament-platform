@@ -18,7 +18,7 @@ export default async function PlatformAdminLayout({ children }: { children: Reac
     where: { email: authUser.email.toLowerCase() }
   });
 
-  if (user?.role !== 'PLATFORM_ADMIN') {
+  if (!user?.isPlatformAdmin) {
     redirect('/login?error=Unauthorized%20access%20-%20Platform%20Admin%20role%20required');
   }
 

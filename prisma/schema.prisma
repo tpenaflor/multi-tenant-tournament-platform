@@ -20,19 +20,48 @@ model Organization {
   isActive    Boolean      @default(true)
   theme       String?      // Stores JSON string of theme configuration (e.g. primaryColor, backgroundColor)
 
-  users       User[]
+  members     OrganizationMember[]
   tournaments Tournament[]
   pages       Page[]
 }
 
 model User {
+  id                    String                @id @default(uuid())
+  email                 String                @unique
+  name                  String?
+  isPlatformAdmin       Boolean               @default(false)
+  createdAt             DateTime              @default(now())
+  
+  organizationMembers   OrganizationMember[]
+  tournamentMembers     TournamentMember[]
+}
+
+model OrganizationMember {
   id             String       @id @default(uuid())
-  email          String       @unique
-  name           String?
-  role           String       @default("ORGANIZER") // ORGANIZER, PLAYER, ADMIN, PLATFORM_ADMIN
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String       @default("PLAYER") // ORGANIZER, PLAYER
+  isBanned       Boolean      @default(false)
   createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, organizationId])
+}
+
+model TournamentMember {
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournamentId   String
+  tournament     Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  role           String       @default("PLAYER") // PLAYER, TEMPORARY_ORGANIZER
+  isBanned       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, tournamentId])
 }
 
 model Tournament {
@@ -47,6 +76,7 @@ model Tournament {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   brackets       Bracket[]
+  members        TournamentMember[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

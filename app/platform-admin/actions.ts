@@ -45,11 +45,18 @@ export async function addOrganization(data: { name: string; slug: string }) {
       name: data.name,
       slug: data.slug,
       isActive: true,
-      users: {
+      members: {
         create: {
-          email,
-          name: `${data.name} Admin`,
-          role: 'ADMIN',
+          user: {
+            connectOrCreate: {
+              where: { email },
+              create: {
+                email,
+                name: `${data.name} Admin`,
+              }
+            }
+          },
+          role: 'ORGANIZER',
         },
       },
     },

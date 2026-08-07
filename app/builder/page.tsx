@@ -16,21 +16,28 @@ export default async function BuilderPage({ searchParams }: { searchParams: Prom
   // Fetch the user's organization
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
-    include: { organization: true },
+    include: {
+      organizationMembers: {
+        where: { role: 'ORGANIZER' },
+        include: { organization: true }
+      }
+    },
   });
 
-  if (!dbUser || !dbUser.organization) {
+  const activeOrgMember = dbUser?.organizationMembers?.[0];
+
+  if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-6">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-white">Access Denied</h1>
-          <p className="text-slate-400">You must be assigned to an organization to use the Builder.</p>
+          <p className="text-slate-400">You must be an organizer of an organization to use the Builder.</p>
         </div>
       </div>
     );
   }
 
-  const org = dbUser.organization;
+  const org = activeOrgMember.organization;
 
   // Fetch the current page layout, or fall back to default components
   let initialComponents: any[] = [];

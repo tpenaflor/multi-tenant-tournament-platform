@@ -21,12 +21,21 @@ export async function createTournament(formData: FormData) {
   }
 
   const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! }
+    where: { email: user.email! },
+    include: {
+      organizationMembers: {
+        where: { role: 'ORGANIZER' }
+      }
+    }
   });
 
-  if (!dbUser || !dbUser.organizationId || (dbUser.role !== 'ORGANIZER' && dbUser.role !== 'ADMIN')) {
+  const activeOrgMember = dbUser?.organizationMembers?.[0];
+
+  if (!dbUser || !activeOrgMember) {
     throw new Error('Forbidden');
   }
+
+  const organizationId = activeOrgMember.organizationId;
 
   // Basic slugification for tournament (must be unique per organization)
   let slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -35,7 +44,7 @@ export async function createTournament(formData: FormData) {
   let existing = await prisma.tournament.findUnique({
     where: {
       organizationId_slug: {
-        organizationId: dbUser.organizationId,
+        organizationId,
         slug
       }
     }
@@ -47,7 +56,7 @@ export async function createTournament(formData: FormData) {
     existing = await prisma.tournament.findUnique({
       where: {
         organizationId_slug: {
-          organizationId: dbUser.organizationId,
+          organizationId,
           slug: newSlug
         }
       }
@@ -66,7 +75,7 @@ export async function createTournament(formData: FormData) {
       sport,
       format,
       status: 'DRAFT',
-      organizationId: dbUser.organizationId
+      organizationId
     }
   });
 
@@ -80,18 +89,27 @@ export async function deleteTournament(id: string) {
   if (!user) throw new Error('Unauthorized');
 
   const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! }
+    where: { email: user.email! },
+    include: {
+      organizationMembers: {
+        where: { role: 'ORGANIZER' }
+      }
+    }
   });
 
-  if (!dbUser || !dbUser.organizationId || (dbUser.role !== 'ORGANIZER' && dbUser.role !== 'ADMIN')) {
+  const activeOrgMember = dbUser?.organizationMembers?.[0];
+
+  if (!dbUser || !activeOrgMember) {
     throw new Error('Forbidden');
   }
+
+  const organizationId = activeOrgMember.organizationId;
 
   const tournament = await prisma.tournament.findUnique({
     where: { id }
   });
 
-  if (!tournament || tournament.organizationId !== dbUser.organizationId) {
+  if (!tournament || tournament.organizationId !== organizationId) {
     throw new Error('Forbidden or Not Found');
   }
 

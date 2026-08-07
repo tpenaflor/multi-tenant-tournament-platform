@@ -17,14 +17,21 @@ export async function savePageLayout(components: any[], tournamentId?: string) {
     // Check if the organization exists for this user
     const dbUser = await prisma.user.findUnique({
       where: { email: user.email! },
-      include: { organization: true },
+      include: {
+        organizationMembers: {
+          where: { role: 'ORGANIZER' },
+          include: { organization: true }
+        }
+      },
     });
 
-    if (!dbUser || !dbUser.organization) {
+    const activeOrgMember = dbUser?.organizationMembers?.[0];
+
+    if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
       throw new Error('User is not assigned to an organization');
     }
 
-    const org = dbUser.organization;
+    const org = activeOrgMember.organization;
     const slug = tournamentId || '/';
 
     // Upsert the page for this organization
@@ -68,14 +75,21 @@ export async function saveTenantTheme(theme: string) {
 
     const dbUser = await prisma.user.findUnique({
       where: { email: user.email! },
-      include: { organization: true },
+      include: {
+        organizationMembers: {
+          where: { role: 'ORGANIZER' },
+          include: { organization: true }
+        }
+      },
     });
 
-    if (!dbUser || !dbUser.organization) {
+    const activeOrgMember = dbUser?.organizationMembers?.[0];
+
+    if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
       throw new Error('User is not assigned to an organization');
     }
 
-    const org = dbUser.organization;
+    const org = activeOrgMember.organization;
 
     await prisma.organization.update({
       where: { id: org.id },

@@ -2,6 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
 import { renderBuilderComponent, ComponentItem } from '@/components/builder/ComponentRegistry';
+import { signUpForTournament } from './actions';
 
 interface TournamentPageProps {
   params: Promise<{
@@ -27,12 +28,18 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
   });
 
   let isOwner = false;
+  let dbUser = null;
   
   if (user && org) {
-    const dbUser = await prisma.user.findUnique({
-      where: { email: user.email! }
+    dbUser = await prisma.user.findUnique({
+      where: { email: user.email! },
+      include: {
+        organizationMembers: {
+          where: { organizationId: org.id }
+        }
+      }
     });
-    isOwner = dbUser?.role === 'ORGANIZER' && dbUser?.organizationId === org.id;
+    isOwner = dbUser?.organizationMembers?.[0]?.role === 'ORGANIZER';
   }
 
   if (!org) {
@@ -92,10 +99,73 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
     }
   }
 
+  // Inside the component before rendering
+  let currentPath = `/tournaments/${tournamentSlug}`;
+  let tournamentMember = null;
+  let orgMember = null;
+
+  if (user && dbUser) {
+    tournamentMember = await prisma.tournamentMember.findUnique({
+      where: {
+        userId_tournamentId: {
+          userId: dbUser.id,
+          tournamentId: tournament.id
+        }
+      }
+    });
+
+    orgMember = await prisma.organizationMember.findUnique({
+      where: {
+        userId_organizationId: {
+          userId: dbUser.id,
+          organizationId: org.id
+        }
+      }
+    });
+  }
+
+  const isBanned = orgMember?.isBanned || tournamentMember?.isBanned;
+
+  const SignUpBanner = () => {
+    if (isOwner) return null;
+    if (isBanned) {
+      return (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-rose-600 text-white p-3 text-center shadow-lg font-medium">
+          You are not permitted to sign up for this tournament.
+        </div>
+      );
+    }
+    if (tournamentMember) {
+      return (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 text-white p-3 text-center shadow-lg font-medium flex items-center justify-center gap-2">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          You are signed up for this tournament as a {tournamentMember.role === 'TEMPORARY_ORGANIZER' ? 'Temporary Organizer' : 'Player'}!
+        </div>
+      );
+    }
+    
+    return (
+      <div className="fixed top-0 left-0 right-0 z-50 bg-sky-600 text-white p-3 shadow-lg flex justify-between items-center px-6">
+        <span className="font-medium">Registration is open! Join {tournament.name}</span>
+        <form action={async () => {
+          'use server';
+          await signUpForTournament(tournament.id, currentPath);
+        }}>
+          <button type="submit" className="bg-white text-sky-700 hover:bg-sky-50 px-4 py-1.5 rounded-full font-bold text-sm transition-colors">
+            Sign Up Now
+          </button>
+        </form>
+      </div>
+    );
+  };
+
   // If we have components saved in the DB, render them
   if (components.length > 0) {
     return (
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen p-8 pt-20">
+        <SignUpBanner />
         <div className="max-w-5xl mx-auto space-y-4">
           {components.map((comp) => renderBuilderComponent(comp))}
         </div>
@@ -113,7 +183,8 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
 
   // Fallback to the default static page if no layout is found in the DB
   return (
-    <main className="min-h-screen p-8 flex flex-col items-center justify-center">
+    <main className="min-h-screen p-8 pt-20 flex flex-col items-center justify-center">
+      <SignUpBanner />
       <div className="max-w-3xl w-full text-center space-y-6 bg-tenant-bg p-10 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-sm mix-blend-screen">
         <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold tracking-wide uppercase">
           Tournament Page

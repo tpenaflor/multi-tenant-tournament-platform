@@ -30,9 +30,14 @@ export default async function TenantPage({ params }: TenantPageProps) {
   
   if (user && org) {
     const dbUser = await prisma.user.findUnique({
-      where: { email: user.email! }
+      where: { email: user.email! },
+      include: {
+        organizationMembers: {
+          where: { organizationId: org.id }
+        }
+      }
     });
-    isOwner = dbUser?.role === 'ORGANIZER' && dbUser?.organizationId === org.id;
+    isOwner = dbUser?.organizationMembers?.[0]?.role === 'ORGANIZER';
   }
 
   if (!org) {

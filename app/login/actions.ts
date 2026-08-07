@@ -21,22 +21,13 @@ export async function login(formData: FormData) {
     return redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
-  // Find user in Prisma to determine their role and organization
+  // Find user in Prisma to determine their global role
   const user = await prisma.user.findUnique({
     where: { email },
   });
 
-  if (user?.role === 'PLATFORM_ADMIN') {
+  if (user?.isPlatformAdmin) {
     return redirect('/platform-admin');
-  }
-
-  if ((user?.role === 'ORGANIZER' || user?.role === 'ADMIN') && user.organizationId) {
-    const org = await prisma.organization.findUnique({
-      where: { id: user.organizationId },
-    });
-    if (org) {
-      return redirect(`/dashboard`);
-    }
   }
 
   if (!user) {
@@ -44,6 +35,34 @@ export async function login(formData: FormData) {
   }
 
   return redirect('/');
+}
+
+export async function signInWithGoogle(tenantSlug?: string) {
+  const supabase = await createClient();
+  
+  // Pass tenantSlug in query params so callback can know which tenant to enroll them in
+  const redirectUrl = new URL(process.env.NEXT_PUBLIC_ROOT_DOMAIN 
+    ? (process.env.NODE_ENV === 'production' ? `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/auth/callback` : `http://localhost:3000/auth/callback`)
+    : 'http://localhost:3000/auth/callback');
+
+  if (tenantSlug) {
+    redirectUrl.searchParams.set('tenant', tenantSlug);
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: redirectUrl.toString(),
+    },
+  });
+
+  if (error) {
+    return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (data.url) {
+    return redirect(data.url);
+  }
 }
 
 export async function logout() {

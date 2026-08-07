@@ -13,21 +13,31 @@ export default async function DashboardPage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
-    include: { organization: true }
+    include: {
+      organizationMembers: {
+        where: { role: 'ORGANIZER' },
+        include: { organization: true }
+      }
+    }
   });
 
-  if (!dbUser || !dbUser.organization) {
-    return <div>No organization found.</div>;
+  const activeOrgMember = dbUser?.organizationMembers?.[0];
+
+  if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
+    return <div>No organization found. You do not have organizer access.</div>;
   }
 
+  const organizationId = activeOrgMember.organizationId;
+  const org = activeOrgMember.organization;
+
   const tournaments = await prisma.tournament.findMany({
-    where: { organizationId: dbUser.organizationId! },
+    where: { organizationId },
     orderBy: { createdAt: 'desc' }
   });
 
   const pages = await prisma.page.findMany({
     where: {
-      organizationId: dbUser.organizationId!,
+      organizationId,
       slug: { in: tournaments.map(t => t.id) }
     }
   });
@@ -42,8 +52,11 @@ export default async function DashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6">
         <div>
           <h2 className="text-3xl font-bold text-white">Your Tournaments</h2>
-          <p className="text-slate-400 mt-1">Manage events for {dbUser.organization.name}</p>
+          <p className="text-slate-400 mt-1">Manage events for {org.name}</p>
         </div>
+        <a href="/dashboard/users" className="bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors">
+          Manage Users
+        </a>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -126,6 +139,9 @@ export default async function DashboardPage() {
              <div className="pt-4 border-t border-slate-800/50 flex flex-col gap-2">
                 <a href={`/builder?tournament=${t.id}`} className="text-center w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2 rounded-lg text-sm transition-colors">
                   Edit Details
+                </a>
+                <a href={`/tenant/${org.slug}/tournaments/${t.slug}/manage`} className="text-center w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2 rounded-lg text-sm transition-colors">
+                  Manage Players
                 </a>
              </div>
           </div>

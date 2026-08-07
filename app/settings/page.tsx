@@ -18,6 +18,9 @@ export default async function SettingsPage(props: {
 
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email },
+    include: {
+      organizationMembers: true
+    }
   });
 
   if (!dbUser) {
@@ -28,10 +31,10 @@ export default async function SettingsPage(props: {
   const success = searchParams.success as string;
 
   let dashboardUrl = '/';
-  if (dbUser.role === 'PLATFORM_ADMIN') {
+  if (dbUser.isPlatformAdmin) {
     dashboardUrl = '/platform-admin';
-  } else if (dbUser.role === 'ORGANIZER' || dbUser.role === 'ADMIN') {
-    dashboardUrl = '/builder';
+  } else if (dbUser.organizationMembers?.some(m => m.role === 'ORGANIZER')) {
+    dashboardUrl = '/dashboard';
   }
 
   return (
