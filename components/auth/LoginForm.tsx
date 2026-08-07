@@ -40,10 +40,7 @@ export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
         <span className="border-b border-slate-800 w-1/4"></span>
       </div>
 
-      <form action={async () => {
-        'use server';
-        await signInWithGoogle(tenantSlug);
-      }}>
+      <form action={signInWithGoogle.bind(null, tenantSlug)}>
         <button
           type="submit"
           className="w-full bg-white hover:bg-gray-100 text-gray-900 font-bold py-3 rounded-xl shadow-lg transition-all mt-6 flex items-center justify-center gap-3"
