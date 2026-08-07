@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { updatePassword, updateProfile } from './actions';
+import { logout } from '@/app/login/actions';
 import { CheckCircleIcon } from '@/components/ui/icons';
 
 export default async function SettingsPage(props: {
@@ -45,12 +46,19 @@ export default async function SettingsPage(props: {
             <h1 className="text-3xl font-bold text-white tracking-tight">Account Settings</h1>
             <p className="text-slate-400 mt-1">Manage your profile and security preferences.</p>
           </div>
-          <Link
-            href={dashboardUrl}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm font-medium"
-          >
-            Back to Dashboard
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href={dashboardUrl}
+              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Back to Dashboard
+            </Link>
+            <form action={logout}>
+              <button type="submit" className="px-4 py-2 rounded-lg bg-rose-900/50 hover:bg-rose-800/50 text-rose-400 hover:text-rose-300 transition-colors text-sm font-medium border border-rose-900/50">
+                Logout
+              </button>
+            </form>
+          </div>
         </div>
 
         {error && (
