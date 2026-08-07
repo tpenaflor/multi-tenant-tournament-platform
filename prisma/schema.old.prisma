@@ -1,0 +1,79 @@
+// Prisma Schema for Multi-Tenant Bracket Sports Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  customDomain String?     @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  isActive    Boolean      @default(true)
+  theme       String?      // Stores JSON string of theme configuration (e.g. primaryColor, backgroundColor)
+
+  users       User[]
+  tournaments Tournament[]
+  pages       Page[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  name           String?
+  role           String       @default("ORGANIZER") // ORGANIZER, PLAYER, ADMIN, PLATFORM_ADMIN
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+}
+
+model Tournament {
+  id             String       @id @default(uuid())
+  name           String
+  slug           String
+  sport          String       @default("Pickleball") // Pickleball, Tennis, Badminton
+  format         String       @default("SingleElimination") // SingleElimination, DoubleElimination, RoundRobin
+  status         String       @default("DRAFT") // DRAFT, PUBLISHED, IN_PROGRESS, COMPLETED
+  startDate      DateTime?
+  endDate        DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brackets       Bracket[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, slug])
+}
+
+model Bracket {
+  id           String     @id @default(uuid())
+  name         String
+  division     String?    // e.g. Men's Doubles 4.0, Open Singles
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  data         String     // Stores JSON string of matches, rounds, seedings from brackets-manager
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Page {
+  id             String       @id @default(uuid())
+  title          String
+  slug           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  components     String       // Layout JSON string: [{ type: "HeroBanner", props: {...} }]
+  published      Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, slug])
+}
