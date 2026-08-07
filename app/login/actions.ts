@@ -24,17 +24,27 @@ export async function login(formData: FormData) {
   // Find user in Prisma to determine their global role
   const user = await prisma.user.findUnique({
     where: { email },
+    include: {
+      organizationMembers: {
+        where: { role: 'ORGANIZER' }
+      }
+    }
   });
 
   if (user?.isPlatformAdmin) {
     return redirect('/platform-admin');
   }
 
+  if (user?.organizationMembers && user.organizationMembers.length > 0) {
+    return redirect('/dashboard');
+  }
+
   if (!user) {
     return redirect('/login?error=User%20profile%20not%20found%20in%20database');
   }
 
-  return redirect('/');
+  // Fallback
+  return redirect('/settings');
 }
 
 export async function signInWithGoogle(tenantSlug?: string) {

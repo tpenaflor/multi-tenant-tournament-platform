@@ -58,5 +58,31 @@ export async function GET(request: Request) {
   }
 
   // URL to redirect to after sign in process completes
-  return NextResponse.redirect(new URL('/', request.url));
+  let redirectUrl = '/';
+
+  if (!tenantSlug) {
+    // If they logged in on the main domain via OAuth, route them properly
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && user.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: user.email },
+        include: {
+          organizationMembers: {
+            where: { role: 'ORGANIZER' }
+          }
+        }
+      });
+
+      if (dbUser?.isPlatformAdmin) {
+        redirectUrl = '/platform-admin';
+      } else if (dbUser?.organizationMembers && dbUser.organizationMembers.length > 0) {
+        redirectUrl = '/dashboard';
+      } else {
+        redirectUrl = '/settings';
+      }
+    }
+  }
+
+  return NextResponse.redirect(new URL(redirectUrl, request.url));
 }

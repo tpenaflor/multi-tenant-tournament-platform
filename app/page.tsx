@@ -1,6 +1,34 @@
 import { login, signInWithGoogle } from './login/actions';
+import { createClient } from '@/utils/supabase/server';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email! },
+      include: {
+        organizationMembers: {
+          where: { role: 'ORGANIZER' }
+        }
+      }
+    });
+
+    if (dbUser?.isPlatformAdmin) {
+      redirect('/platform-admin');
+    }
+
+    if (dbUser?.organizationMembers && dbUser.organizationMembers.length > 0) {
+      redirect('/dashboard');
+    }
+
+    // Default for players logging in on the main domain
+    redirect('/settings');
+  }
+
   return (
     <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-sky-950 p-6 lg:p-12">
       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
