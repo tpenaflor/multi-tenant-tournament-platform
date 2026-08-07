@@ -51,11 +51,18 @@ describe('Platform Admin Actions', () => {
           name: 'New Org',
           slug: 'new-org',
           isActive: true,
-          users: {
+          members: {
             create: {
-              email: 'admin@new-org.com',
-              name: 'New Org Admin',
-              role: 'ADMIN',
+              user: {
+                connectOrCreate: {
+                  where: { email: 'admin@new-org.com' },
+                  create: {
+                    email: 'admin@new-org.com',
+                    name: 'New Org Admin',
+                  }
+                }
+              },
+              role: 'ORGANIZER',
             },
           },
         },

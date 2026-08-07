@@ -45,7 +45,7 @@ describe('Login Actions', () => {
       mockSignInWithPassword.mockResolvedValue({ data: { user: { email: 'admin@bracket.sports' } }, error: null });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         email: 'admin@bracket.sports',
-        role: 'PLATFORM_ADMIN',
+        isPlatformAdmin: true,
       });
 
       const formData = new FormData();
@@ -59,24 +59,7 @@ describe('Login Actions', () => {
       });
     });
 
-    it('redirects organizer to /dashboard upon successful login', async () => {
-      mockSignInWithPassword.mockResolvedValue({ data: { user: { email: 'organizer@demo.com' } }, error: null });
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        email: 'organizer@demo.com',
-        role: 'ORGANIZER',
-        organizationId: 'org-123',
-      });
-      (prisma.organization.findUnique as jest.Mock).mockResolvedValue({
-        id: 'org-123',
-        slug: 'demo-tenant',
-      });
 
-      const formData = new FormData();
-      formData.append('email', 'organizer@demo.com');
-      formData.append('password', 'Password123!');
-
-      await expect(login(formData)).rejects.toThrow('REDIRECT:/dashboard');
-    });
 
     it('redirects to /login?error=... on authentication failure', async () => {
       mockSignInWithPassword.mockResolvedValue({

@@ -42,7 +42,7 @@ describe('Builder Actions', () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'user-1',
         email: 'admin@bayareapickleball.com',
-        organization: { id: 'org-1', slug: 'bay-area-pickleball' },
+        organizationMembers: [{ organization: { id: 'org-1', slug: 'bay-area-pickleball' } }],
       });
       (prisma.page.upsert as jest.Mock).mockResolvedValue({});
 
@@ -52,7 +52,12 @@ describe('Builder Actions', () => {
       expect(createClient).toHaveBeenCalledTimes(1);
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'admin@bayareapickleball.com' },
-        include: { organization: true },
+        include: {
+          organizationMembers: {
+            where: { role: 'ORGANIZER' },
+            include: { organization: true }
+          }
+        },
       });
       expect(prisma.page.upsert).toHaveBeenCalledTimes(1);
       expect(revalidatePath).toHaveBeenCalledWith('/tenant/bay-area-pickleball');
@@ -89,7 +94,7 @@ describe('Builder Actions', () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'user-2',
         email: 'noorg@test.com',
-        organization: null,
+        organizationMembers: [],
       });
 
       const result = await savePageLayout([]);
