@@ -1,0 +1,224 @@
+/* Modern Components CSS extracted from Social Pickle Template */
+
+.modern-shell {
+  width: min(1160px, 100% - 48px);
+  margin: auto;
+}
+
+.modern-eyebrow {
+  letter-spacing: 0.2em;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Modern Hero */
+.modern-hero {
+  min-height: 680px;
+  padding: 26px 0 50px;
+  background-color: var(--tenant-bg);
+  color: var(--tenant-text);
+  font-family: var(--tenant-font-sans);
+}
+
+.modern-hero-grid {
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 24px;
+  padding: 48px 5% 24px;
+  display: grid;
+}
+
+.modern-kicker {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.modern-hero h1,
+.modern-intro h2,
+.modern-event-band h2,
+.modern-community h2 {
+  font-family: var(--tenant-font-serif);
+  letter-spacing: -0.045em;
+  font-weight: 400;
+  line-height: 0.88;
+}
+
+.modern-hero h1 {
+  margin: 0;
+  font-size: clamp(66px, 8.4vw, 122px);
+}
+
+.modern-hero h1 em,
+.modern-intro h2 em,
+.modern-event-band h2 em,
+.modern-community h2 em {
+  color: var(--tenant-accent);
+  font-style: italic;
+}
+
+.modern-lede {
+  max-width: 430px;
+  margin: 30px 0;
+  line-height: 1.7;
+}
+
+.modern-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  display: flex;
+}
+
+.modern-button {
+  background: var(--tenant-primary);
+  color: var(--tenant-bg);
+  cursor: pointer;
+  border: 0;
+  border-radius: 99px;
+  align-items: center;
+  gap: 24px;
+  padding: 15px 20px 15px 24px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform 0.2s;
+  display: inline-flex;
+}
+
+.modern-button:hover {
+  transform: translateY(-2px);
+}
+
+.modern-button span {
+  font-size: 18px;
+}
+
+.modern-hero-image {
+  justify-self: center;
+  width: min(100%, 430px);
+}
+
+/* Modern Intro */
+.modern-intro {
+  background-color: var(--tenant-bg-alt);
+  color: var(--tenant-text);
+  padding: 105px 0;
+}
+
+.modern-two-col {
+  grid-template-columns: 1fr 1.5fr;
+  gap: 48px;
+  display: grid;
+}
+
+.modern-two-col h2 {
+  margin: 0 0 24px;
+  font-size: clamp(50px, 6vw, 86px);
+}
+
+.modern-two-col p:not(.modern-eyebrow) {
+  max-width: 520px;
+  margin-bottom: 28px;
+  line-height: 1.8;
+}
+
+.modern-underlined {
+  border-bottom: 2px solid var(--tenant-accent);
+  padding-bottom: 4px;
+  font-weight: 800;
+  display: inline-block;
+}
+.modern-underlined span {
+  font-size: 18px;
+  margin-left: 8px;
+}
+
+/* Modern Event Band */
+.modern-event-band {
+  background-color: var(--tenant-accent);
+  padding: 75px 0;
+}
+
+.modern-event-card {
+  color: var(--tenant-bg);
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  display: grid;
+}
+
+.modern-event-card h2 {
+  margin-top: 16px;
+  font-size: clamp(50px, 6vw, 86px);
+}
+
+.modern-event-details {
+  align-self: end;
+}
+
+.modern-event-date {
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.modern-button-light {
+  background: var(--tenant-bg);
+  color: var(--tenant-primary);
+  margin-top: 18px;
+}
+
+/* Modern Community */
+.modern-community {
+  background-color: var(--tenant-bg);
+  color: var(--tenant-text);
+  justify-content: space-between;
+  gap: 50px;
+  padding: 110px 0;
+  display: flex;
+}
+
+.modern-community h2 {
+  margin: 0 0 24px;
+  font-size: clamp(50px, 6vw, 86px);
+}
+
+.modern-link-stack {
+  min-width: min(100%, 420px);
+}
+
+.modern-link-stack a {
+  font-family: var(--tenant-font-serif);
+  border-bottom: 1px solid var(--tenant-border);
+  justify-content: space-between;
+  padding: 20px 0;
+  font-size: 30px;
+  display: flex;
+}
+
+.modern-link-stack span {
+  color: var(--tenant-accent);
+}
+
+@media (max-width: 720px) {
+  .modern-shell {
+    width: min(100% - 32px, 1160px);
+  }
+  .modern-hero {
+    min-height: auto;
+  }
+  .modern-hero-grid,
+  .modern-two-col,
+  .modern-event-card {
+    grid-template-columns: 1fr;
+  }
+  .modern-hero-grid {
+    padding: 50px 0 10px;
+  }
+  .modern-hero-image {
+    grid-row: 1;
+    max-width: 290px;
+  }
+  .modern-community {
+    display: grid;
+  }
+}

@@ -11,6 +11,11 @@ import { InfoGrid, InfoGridProps } from './InfoGrid';
 import { ImageBanner, ImageBannerProps } from './ImageBanner';
 import { MarqueeDivider, MarqueeDividerProps } from './MarqueeDivider';
 import { ComponentSchema } from './schema';
+import { ModernHero, ModernHeroProps } from './ModernHero';
+import { ModernIntro, ModernIntroProps } from './ModernIntro';
+import { ModernEventBand, ModernEventBandProps } from './ModernEventBand';
+import { ModernCommunity, ModernCommunityProps } from './ModernCommunity';
+import './modern.css';
 
 export interface ComponentItem {
   id: string;
@@ -151,6 +156,65 @@ export const COMPONENT_SCHEMAS: ComponentSchema[] = [
       { name: 'title', label: 'Section Title (Optional)', type: 'text' },
       { name: 'htmlContent', label: 'Raw HTML Content', type: 'textarea' }
     ]
+  },
+  {
+    id: 'ModernHero',
+    title: 'Modern Hero',
+    description: 'Dynamic layout with large typography',
+    isPremium: false,
+    requiresTournament: false,
+    fields: [
+      { name: 'kicker', label: 'Kicker', type: 'text' },
+      { name: 'title', label: 'Title (HTML allowed)', type: 'textarea' },
+      { name: 'lede', label: 'Lede', type: 'textarea' },
+      { name: 'buttonText', label: 'Button Text', type: 'text' },
+      { name: 'buttonLink', label: 'Button Link', type: 'text' },
+      { name: 'imageSrc', label: 'Image URL', type: 'text' },
+    ]
+  },
+  {
+    id: 'ModernIntro',
+    title: 'Modern Intro',
+    description: 'Split column introduction',
+    isPremium: false,
+    requiresTournament: false,
+    fields: [
+      { name: 'eyebrow', label: 'Eyebrow', type: 'text' },
+      { name: 'title', label: 'Title (HTML allowed)', type: 'textarea' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'linkText', label: 'Link Text', type: 'text' },
+      { name: 'linkHref', label: 'Link URL', type: 'text' },
+    ]
+  },
+  {
+    id: 'ModernEventBand',
+    title: 'Modern Event Band',
+    description: 'Highlighted upcoming event',
+    isPremium: false,
+    requiresTournament: false,
+    fields: [
+      { name: 'eyebrow', label: 'Eyebrow', type: 'text' },
+      { name: 'title', label: 'Title (HTML allowed)', type: 'textarea' },
+      { name: 'eventDate', label: 'Event Date', type: 'text' },
+      { name: 'eventDetails', label: 'Event Details', type: 'text' },
+      { name: 'buttonText', label: 'Button Text', type: 'text' },
+      { name: 'buttonLink', label: 'Button Link', type: 'text' },
+    ]
+  },
+  {
+    id: 'ModernCommunity',
+    title: 'Modern Community',
+    description: 'Footer-like community links',
+    isPremium: false,
+    requiresTournament: false,
+    fields: [
+      { name: 'eyebrow', label: 'Eyebrow', type: 'text' },
+      { name: 'title', label: 'Title (HTML allowed)', type: 'textarea' },
+      { name: 'link1Text', label: 'Link 1 Text', type: 'text' },
+      { name: 'link1Href', label: 'Link 1 URL', type: 'text' },
+      { name: 'link2Text', label: 'Link 2 Text', type: 'text' },
+      { name: 'link2Href', label: 'Link 2 URL', type: 'text' },
+    ]
   }
 ];
 
@@ -178,6 +242,14 @@ export const renderBuilderComponent = (component: ComponentItem, dynamicData?: a
       return <ImageBanner key={component.id} {...(component.props as ImageBannerProps)} />;
     case 'MarqueeDivider':
       return <MarqueeDivider key={component.id} {...(component.props as MarqueeDividerProps)} />;
+    case 'ModernHero':
+      return <ModernHero key={component.id} {...(component.props as ModernHeroProps)} />;
+    case 'ModernIntro':
+      return <ModernIntro key={component.id} {...(component.props as ModernIntroProps)} />;
+    case 'ModernEventBand':
+      return <ModernEventBand key={component.id} {...(component.props as ModernEventBandProps)} />;
+    case 'ModernCommunity':
+      return <ModernCommunity key={component.id} {...(component.props as ModernCommunityProps)} />;
     default:
       return null;
   }
