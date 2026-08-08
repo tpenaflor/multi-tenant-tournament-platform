@@ -1,18 +1,22 @@
 import React from 'react';
 import { TrophyIcon, CalendarIcon, MapPinIcon } from '../ui/icons';
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
 
 export interface TournamentListProps {
   title?: string;
   description?: string;
   tournaments?: any[]; // Passed via dynamicData from Server Components
   basePath?: string; // Passed via dynamicData from Server Components
+  design?: DesignSettings;
 }
 
 export const TournamentList: React.FC<TournamentListProps> = ({
   title = "Upcoming & Active Tournaments",
   description = "Find and register for upcoming events.",
   tournaments,
-  basePath = ''
+  basePath = '',
+  design,
 }) => {
   // Use provided tournaments or fallback to mock data for the builder preview when no real data exists
   const displayTournaments = tournaments && tournaments.length > 0 ? tournaments.map(t => ({
@@ -54,7 +58,7 @@ export const TournamentList: React.FC<TournamentListProps> = ({
   ];
 
   return (
-    <div className="my-8 rounded-2xl bg-tenant-bg border border-slate-800 p-8 shadow-xl text-tenant-text">
+    <div style={buildDesignCssVars(design)} className="my-8 rounded-2xl bg-tenant-bg border border-slate-800 p-8 shadow-xl text-tenant-text">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-extrabold text-white">{title}</h2>
         {description && <p className="text-slate-400 mt-2">{description}</p>}

@@ -1,10 +1,13 @@
 import React from 'react';
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
 
 export interface LocationLogisticsProps {
   venueName?: string;
   address?: string;
   parkingInfo?: string;
   facilityRules?: string;
+  design?: DesignSettings;
 }
 
 export const LocationLogistics: React.FC<LocationLogisticsProps> = ({
@@ -12,9 +15,10 @@ export const LocationLogistics: React.FC<LocationLogisticsProps> = ({
   address = "450 Sportsplex Parkway, Atlanta, GA 30301",
   parkingInfo = "Free participant parking in Lot B. Overflow parking in Lot C.",
   facilityRules = "Non-marking court shoes required. Warmup courts open 45 minutes prior to first match.",
+  design,
 }) => {
   return (
-    <div className="my-6 rounded-2xl bg-tenant-bg border border-slate-800 p-6 shadow-xl text-tenant-text grid md:grid-cols-2 gap-6">
+    <div style={buildDesignCssVars(design)} className="my-6 rounded-2xl bg-tenant-bg border border-slate-800 p-6 shadow-xl text-tenant-text grid md:grid-cols-2 gap-6">
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
           <span>📍 Venue & Location</span>

@@ -2,11 +2,15 @@
 
 import React, { useState } from 'react';
 
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
+
 export interface LiveBracketEmbedProps {
   divisionName?: string;
   tournamentName?: string;
   division?: string;
   format?: string;
+  design?: DesignSettings;
 }
 
 export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
@@ -14,12 +18,13 @@ export const LiveBracketEmbed: React.FC<LiveBracketEmbedProps> = ({
   tournamentName,
   division,
   format = "Double Elimination",
+  design,
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'qf' | 'sf' | 'gf'>('all');
   const displayTitle = tournamentName || divisionName || division || "Men's Doubles Open 4.5+";
 
   return (
-    <div id="brackets" className="my-6 rounded-2xl bg-tenant-bg border border-slate-800 p-6 shadow-xl text-tenant-text">
+    <div id="brackets" style={buildDesignCssVars(design)} className="my-6 rounded-2xl bg-tenant-bg border border-slate-800 p-6 shadow-xl text-tenant-text">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800 pb-4">
         <div>
           <span className="text-xs font-bold text-tenant-primary uppercase tracking-widest">Live Tournament Bracket</span>

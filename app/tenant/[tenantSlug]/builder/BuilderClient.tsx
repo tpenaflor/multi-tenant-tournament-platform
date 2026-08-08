@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ComponentItem, renderBuilderComponent, COMPONENT_SCHEMAS } from '@/components/builder/ComponentRegistry';
+import { GOOGLE_FONTS, DesignSettings, buildGoogleFontsUrl } from '@/components/builder/schema';
 import { PlusIcon, TrashIcon, SaveIcon, EyeIcon, LayoutIcon, CheckCircleIcon, SettingsIcon, ArrowUpIcon, ArrowDownIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PaintbrushIcon, MenuIcon, XIcon, SearchIcon } from '@/components/ui/icons';
 import { SortableItem } from './SortableItem';
 import { savePageLayout, generateAiComponentAction, saveTenantTheme } from './actions';
@@ -78,7 +79,15 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
     '--tenant-primary-rgb': hexToRgb(theme.primaryColor || '#0ea5e9'),
     '--tenant-bg-rgb': hexToRgb(theme.backgroundColor || '#020617'),
     '--tenant-text-rgb': hexToRgb(theme.textColor || '#f8fafc'),
+    ...(theme.fontFamily ? { fontFamily: `"${theme.fontFamily}", sans-serif` } : {}),
   } as React.CSSProperties;
+
+  // Collect all Google Fonts needed: global theme font + per-component design fonts
+  const allFontsNeeded = [
+    theme.fontFamily || '',
+    ...components.map(c => c.props?.design?.fontFamily || ''),
+  ].filter(Boolean);
+  const googleFontsUrl = buildGoogleFontsUrl(allFontsNeeded);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -379,7 +388,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   placeholder="Search components..."
                   value={componentSearchQuery}
                   onChange={(e) => setComponentSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500 placeholder-slate-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-500"
                 />
               </div>
 
@@ -470,6 +479,10 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 style={dynamicThemeStyles} 
                 className="bg-tenant-bg text-tenant-text relative min-h-[600px] flex flex-col p-4 sm:p-8"
               >
+                {/* Dynamically load Google Fonts for the preview */}
+                {googleFontsUrl && (
+                  <link rel="stylesheet" href={googleFontsUrl} />
+                )}
                 <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -543,7 +556,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                     placeholder="https://example.com/logo.png"
                     value={theme.logoUrl || ''}
                     onChange={(e) => setTheme({ ...theme, logoUrl: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500"
                   />
                 </div>
                 <div>
@@ -559,7 +572,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       type="text"
                       value={theme.primaryColor || '#0ea5e9'}
                       onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500 font-mono uppercase"
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 font-mono uppercase"
                     />
                   </div>
                 </div>
@@ -576,7 +589,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       type="text"
                       value={theme.backgroundColor || '#020617'}
                       onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500 font-mono uppercase"
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 font-mono uppercase"
                     />
                   </div>
                 </div>
@@ -593,9 +606,22 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       type="text"
                       value={theme.textColor || '#f8fafc'}
                       onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500 font-mono uppercase"
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 font-mono uppercase"
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Global Font Family</label>
+                  <select
+                    value={theme.fontFamily || ''}
+                    onChange={(e) => setTheme({ ...theme, fontFamily: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                  >
+                    {GOOGLE_FONTS.map(f => (
+                      <option key={f.value} value={f.value}>{f.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-500 mt-1">Applied to all tenant pages. Components can override this individually.</p>
                 </div>
                 <div className="text-xs text-yellow-500 mt-2 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
                   Note: Theme changes will only apply once you click <strong>Save Layout</strong> in the top bar. They will then be visible across all pages of your tenant site.
@@ -660,7 +686,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                   type="text"
                                   value={selectedComponent.props[field.name] || ''}
                                   onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500"
+                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500"
                                 />
                               </div>
                             );
@@ -674,7 +700,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                   id={`field-${field.name}`}
                                   value={selectedComponent.props[field.name] || ''}
                                   onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500 h-24 resize-none"
+                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 h-24 resize-none"
                                 />
                               </div>
                             );
@@ -688,7 +714,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                   type="text"
                                   value={(selectedComponent.props[field.name] || []).join(', ')}
                                   onChange={(e) => updateSelectedComponentProp(field.name, e.target.value.split(',').map(s => s.trim()))}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500"
+                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500"
                                 />
                               </div>
                             );
@@ -709,7 +735,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                           if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
                                           newItems[idx].title = e.target.value;
                                           updateSelectedComponentProp(field.name, newItems);
-                                        }} className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1.5 text-xs text-slate-950 focus:outline-none focus:border-sky-500" />
+                                        }} className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
                                       </div>
                                       <div>
                                         <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
@@ -718,7 +744,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                           if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
                                           newItems[idx].subtitle = e.target.value;
                                           updateSelectedComponentProp(field.name, newItems);
-                                        }} className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1.5 text-xs text-slate-950 focus:outline-none focus:border-sky-500" />
+                                        }} className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
                                       </div>
                                       <div>
                                         <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
@@ -727,7 +753,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                           if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
                                           newItems[idx].description = e.target.value;
                                           updateSelectedComponentProp(field.name, newItems);
-                                        }} className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1.5 text-xs text-slate-950 focus:outline-none focus:border-sky-500" />
+                                        }} className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
                                       </div>
                                     </div>
                                   );
@@ -745,7 +771,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                     value={selectedComponent.props.prompt || ''}
                                     onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
                                     placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:border-sky-500 h-20 resize-none"
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500 h-20 resize-none"
                                   />
                                 </div>
 
@@ -797,6 +823,166 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                     {aiError}
                                   </div>
                                 )}
+                              </div>
+                            );
+                          }
+
+                          if (field.type === 'image') {
+                            const imageValue = selectedComponent.props[field.name] || '';
+                            return (
+                              <div key={field.name}>
+                                <label className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                {imageValue ? (
+                                  <div className="relative rounded-lg overflow-hidden border border-slate-800 bg-slate-950 p-2 group">
+                                    <img
+                                      src={imageValue}
+                                      alt="Title image"
+                                      className="w-full h-20 object-contain rounded-md bg-slate-900"
+                                    />
+                                    <button
+                                      onClick={() => updateSelectedComponentProp(field.name, '')}
+                                      className="absolute top-3 right-3 bg-red-500/90 text-white p-1 rounded-full hover:bg-red-600 transition-all text-xs w-6 h-6 flex items-center justify-center font-bold"
+                                      title="Remove image"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-slate-800 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
+                                    <div className="flex flex-col items-center justify-center">
+                                      <span className="text-xs font-semibold text-slate-300">🖼️ Upload image</span>
+                                      <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP, SVG</span>
+                                    </div>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          const reader = new FileReader();
+                                          reader.onload = (ev) => {
+                                            updateSelectedComponentProp(field.name, ev.target?.result as string);
+                                          };
+                                          reader.readAsDataURL(file);
+                                        }
+                                      }}
+                                      className="hidden"
+                                    />
+                                  </label>
+                                )}
+                              </div>
+                            );
+                          }
+
+                          if (field.type === 'design-settings') {
+                            const design: DesignSettings = selectedComponent.props[field.name] || {};
+                            const updateDesign = (key: string, value: string) => {
+                              updateSelectedComponentProp(field.name, { ...design, [key]: value });
+                            };
+                            return (
+                              <div key={field.name} className="space-y-3 border border-slate-800 rounded-lg p-4 bg-slate-950/50">
+                                <div className="text-xs font-bold uppercase tracking-wider text-sky-400 mb-2 flex items-center gap-2">
+                                  <PaintbrushIcon size={12} /> {field.label}
+                                </div>
+                                
+                                {/* Background Color */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-slate-300 mb-1">Background Color</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={design.backgroundColor || ''}
+                                      onChange={(e) => updateDesign('backgroundColor', e.target.value)}
+                                      className="w-8 h-8 rounded cursor-pointer bg-slate-950 border border-slate-800"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={design.backgroundColor || ''}
+                                      onChange={(e) => updateDesign('backgroundColor', e.target.value)}
+                                      placeholder="Inherit from theme"
+                                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                                    />
+                                    {design.backgroundColor && (
+                                      <button onClick={() => updateDesign('backgroundColor', '')} className="text-slate-500 hover:text-red-400 text-xs">✕</button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Text Color */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-slate-300 mb-1">Text Color</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={design.textColor || ''}
+                                      onChange={(e) => updateDesign('textColor', e.target.value)}
+                                      className="w-8 h-8 rounded cursor-pointer bg-slate-950 border border-slate-800"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={design.textColor || ''}
+                                      onChange={(e) => updateDesign('textColor', e.target.value)}
+                                      placeholder="Inherit from theme"
+                                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                                    />
+                                    {design.textColor && (
+                                      <button onClick={() => updateDesign('textColor', '')} className="text-slate-500 hover:text-red-400 text-xs">✕</button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Primary / Accent Color */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-slate-300 mb-1">Primary / Accent Color</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={design.primaryColor || ''}
+                                      onChange={(e) => updateDesign('primaryColor', e.target.value)}
+                                      className="w-8 h-8 rounded cursor-pointer bg-slate-950 border border-slate-800"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={design.primaryColor || ''}
+                                      onChange={(e) => updateDesign('primaryColor', e.target.value)}
+                                      placeholder="Inherit from theme"
+                                      className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                                    />
+                                    {design.primaryColor && (
+                                      <button onClick={() => updateDesign('primaryColor', '')} className="text-slate-500 hover:text-red-400 text-xs">✕</button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Font Family */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-slate-300 mb-1">Font Family</label>
+                                  <select
+                                    value={design.fontFamily || ''}
+                                    onChange={(e) => updateDesign('fontFamily', e.target.value)}
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                                  >
+                                    {GOOGLE_FONTS.map(f => (
+                                      <option key={f.value} value={f.value}>{f.label}</option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                {/* Alignment */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-slate-300 mb-1">Alignment</label>
+                                  <div className="flex gap-1">
+                                    {(['left', 'center', 'right'] as const).map(align => (
+                                      <button
+                                        key={align}
+                                        onClick={() => updateDesign('alignment', design.alignment === align ? '' : align)}
+                                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${design.alignment === align ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                                      >
+                                        {align.charAt(0).toUpperCase() + align.slice(1)}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
                             );
                           }

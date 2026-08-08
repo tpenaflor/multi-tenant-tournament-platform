@@ -1,4 +1,6 @@
 import React from 'react';
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
 
 export interface ModernCommunityProps {
   eyebrow?: string;
@@ -7,6 +9,7 @@ export interface ModernCommunityProps {
   link1Href?: string;
   link2Text?: string;
   link2Href?: string;
+  design?: DesignSettings;
 }
 
 export const ModernCommunity: React.FC<ModernCommunityProps> = ({
@@ -16,9 +19,10 @@ export const ModernCommunity: React.FC<ModernCommunityProps> = ({
   link1Href = 'https://instagram.com',
   link2Text = 'Join us on RecClub',
   link2Href = 'https://reclub.co',
+  design,
 }) => {
   return (
-    <section className="modern-community modern-shell">
+    <section className="modern-community modern-shell" style={buildDesignCssVars(design)}>
       <div>
         {eyebrow && <p className="modern-eyebrow">{eyebrow}</p>}
         {title && <h2 dangerouslySetInnerHTML={{ __html: title }} />}

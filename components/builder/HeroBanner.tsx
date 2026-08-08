@@ -1,32 +1,42 @@
 import React from 'react';
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
 
 export interface HeroBannerProps {
   title?: string;
+  titleImage?: string;
   subtitle?: string;
   date?: string;
   location?: string;
   ctaText?: string;
   ctaLink?: string;
+  design?: DesignSettings;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   title = "Summer Pickleball Championship 2026",
+  titleImage,
   subtitle = "The largest regional bracket tournament featuring singles, doubles, and mixed divisions.",
   date = "August 15-17, 2026",
   location = "Atlanta Sports Complex, Court 1-12",
   ctaText = "Register Now",
   ctaLink = "#register",
+  design,
 }) => {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-950 to-tenant-bg border border-tenant-primary/20 p-8 md:p-12 shadow-2xl text-tenant-text my-4">
+    <section style={buildDesignCssVars(design)} className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-900 via-indigo-950 to-tenant-bg border border-tenant-primary/20 p-8 md:p-12 shadow-2xl text-tenant-text my-4">
       <div className="relative z-10 max-w-3xl space-y-4">
         <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-wider text-tenant-primary">
           <span className="bg-tenant-primary/10 border border-tenant-primary/30 px-3 py-1 rounded-full">📍 {location}</span>
           <span className="bg-tenant-primary/10 border border-tenant-primary/30 px-3 py-1 rounded-full">📅 {date}</span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight">
-          {title}
-        </h1>
+        {titleImage ? (
+          <img src={titleImage} alt={title} className="max-h-28 object-contain" />
+        ) : (
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-tight">
+            {title}
+          </h1>
+        )}
         <p className="text-slate-300 text-lg md:text-xl font-normal leading-relaxed">
           {subtitle}
         </p>

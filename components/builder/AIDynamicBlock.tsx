@@ -1,5 +1,7 @@
 import React from 'react';
 import { isAiComponentEnabled } from '@/lib/featureFlags';
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
 
 export interface AIDynamicBlockProps {
   title?: string;
@@ -10,6 +12,7 @@ export interface AIDynamicBlockProps {
     tenantName?: string;
     basePath?: string;
   };
+  design?: DesignSettings;
 }
 
 /**
@@ -77,8 +80,9 @@ export function sanitizeAndInterpolateHtml(
 export const AIDynamicBlock: React.FC<AIDynamicBlockProps> = ({
   title,
   prompt,
-  htmlContent,
+  htmlContent = '',
   dynamicData,
+  design,
 }) => {
   if (!isAiComponentEnabled()) {
     return null;
@@ -111,7 +115,7 @@ export const AIDynamicBlock: React.FC<AIDynamicBlockProps> = ({
   const processedHtml = sanitizeAndInterpolateHtml(htmlContent, dynamicData);
 
   return (
-    <section className="w-full relative group">
+    <section style={buildDesignCssVars(design)} className="w-full relative group">
       {/* Subtle indicator bar for AI generated components */}
       <div className="w-full rounded-2xl overflow-hidden bg-tenant-bg/60 border border-slate-800/80 p-6 shadow-2xl backdrop-blur-sm">
         {title && (

@@ -1,24 +1,30 @@
 import React from 'react';
+import { DesignSettings } from './schema';
+import { buildDesignCssVars } from './designUtils';
 
 export interface HeroPremiumProps {
   title?: string;
+  titleImage?: string;
   subtitle?: string;
   overline?: string;
   ctaText?: string;
   ctaLink?: string;
   eventDate?: string;
+  design?: DesignSettings;
 }
 
 export const HeroPremium: React.FC<HeroPremiumProps> = ({
   title = "Championship Series.",
+  titleImage,
   subtitle = "The ultimate proving ground. Are you ready to take the crown?",
   overline = "Pro Division presents",
   ctaText = "Register Now",
   ctaLink = "#",
-  eventDate = "November 15, 2026"
+  eventDate = "November 15, 2026",
+  design,
 }) => {
   return (
-    <section className="relative overflow-hidden bg-tenant-bg border border-slate-800 rounded-3xl my-4 text-white">
+    <section style={buildDesignCssVars(design)} className="relative overflow-hidden bg-tenant-bg border border-slate-800 rounded-3xl my-4 text-white">
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900 via-tenant-bg to-tenant-bg" aria-hidden="true"></div>
       <div className="relative z-10 grid gap-12 py-16 px-8 md:px-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
         
@@ -31,9 +37,13 @@ export const HeroPremium: React.FC<HeroPremiumProps> = ({
           <p className="mt-8 text-xs font-bold uppercase tracking-[0.25em] text-amber-400">
             {overline}
           </p>
-          <h1 className="mt-4 font-black text-6xl md:text-8xl tracking-tighter leading-[0.85] text-white">
-            {title}
-          </h1>
+          {titleImage ? (
+            <img src={titleImage} alt={title} className="mt-4 max-h-32 object-contain" />
+          ) : (
+            <h1 className="mt-4 font-black text-6xl md:text-8xl tracking-tighter leading-[0.85] text-white">
+              {title}
+            </h1>
+          )}
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-slate-400">
             {subtitle}
           </p>
