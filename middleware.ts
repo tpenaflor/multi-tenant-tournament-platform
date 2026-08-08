@@ -75,10 +75,11 @@ export default function middleware(req: NextRequest) {
   } else if (hostWithoutPort.endsWith('.localhost')) {
     tenantSlug = hostWithoutPort.substring(0, hostWithoutPort.length - '.localhost'.length);
   } else if (hostWithoutPort.startsWith('www.')) {
-    tenantSlug = hostWithoutPort.substring(4).split('.')[0];
-  } else if (hostWithoutPort.includes('.')) {
-    // If it's a subdomain of something else, take first part
-    tenantSlug = hostWithoutPort.split('.')[0];
+    // Strip www. but keep the rest of the custom domain
+    tenantSlug = hostWithoutPort.substring(4);
+  } else {
+    // It's a custom domain, keep it exactly as is
+    tenantSlug = hostWithoutPort;
   }
 
   // Safety check: 'www' or empty string is never a valid tenant

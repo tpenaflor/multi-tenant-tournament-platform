@@ -80,7 +80,7 @@ describe('Middleware Multi-Tenant Domain Routing', () => {
 
     const res = middleware(req);
     const rewriteHeader = res.headers.get('x-middleware-rewrite');
-    expect(rewriteHeader).toContain('/tenant/atlantapickleball');
+    expect(rewriteHeader).toContain('/tenant/atlantapickleball.com');
   });
 
   it('respects custom NEXT_PUBLIC_ROOT_DOMAIN environment variable', () => {
