@@ -21,6 +21,10 @@ jest.mock('@/lib/prisma', () => ({
 
 jest.mock('next/navigation', () => ({
   redirect: jest.fn(),
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+  })),
 }));
 
 describe('Home Page', () => {

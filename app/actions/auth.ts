@@ -38,6 +38,8 @@ export async function login(formData: FormData) {
     return redirect('/platform-admin');
   }
 
+  const isAdminLogin = formData.get('isAdminLogin') === 'true';
+
   // If they logged in on a specific tenant site, don't redirect them across tenants
   if (tenantSlug) {
     // Check if they are an organizer for THIS tenant
@@ -45,6 +47,11 @@ export async function login(formData: FormData) {
     if (isOrganizerForThisTenant) {
       return redirect('/dashboard');
     }
+
+    if (isAdminLogin) {
+      return { error: 'You do not have organizer access for this tenant.' };
+    }
+    
     // Otherwise, they just logged in as a player, stay on the tenant site
     return redirect('/');
   }

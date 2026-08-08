@@ -1,9 +1,52 @@
-import { login, signInWithGoogle } from '@/app/actions/auth';
+'use client';
+
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+// Fallback to Supabase server actions for non-tenant login
+import { login as supabaseLogin, signInWithGoogle as supabaseSignInWithGoogle } from '@/app/actions/auth';
 
 export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
+  const router = useRouter();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (tenantSlug) {
+      // Use NextAuth for tenant player login
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+        isSignUp: isSignUp ? 'true' : 'false',
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        router.push('/');
+        router.refresh();
+      }
+    } else {
+      // Use Supabase server action for platform admin / organizer login
+      const result = await supabaseLogin(formData);
+      if (result?.error) {
+        setError(result.error);
+      }
+    }
+  }
+
   return (
     <div className="w-full">
-      <form action={login} className="space-y-4">
+      {error && <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 text-red-500 rounded-lg text-sm">{error}</div>}
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
         {tenantSlug && <input type="hidden" name="tenantSlug" value={tenantSlug} />}
         <div>
           <label className="block text-sm font-medium text-tenant-text/90 mb-1" htmlFor="email">Email</label>
@@ -27,11 +70,27 @@ export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
             placeholder="••••••••"
           />
         </div>
+
+        {tenantSlug && (
+          <div className="flex items-center gap-2 mt-2">
+            <input 
+              type="checkbox" 
+              id="isSignUp" 
+              checked={isSignUp} 
+              onChange={(e) => setIsSignUp(e.target.checked)}
+              className="rounded border-tenant-primary/30 text-tenant-primary focus:ring-tenant-primary"
+            />
+            <label htmlFor="isSignUp" className="text-sm text-tenant-text/80">
+              I am a new player (Sign Up)
+            </label>
+          </div>
+        )}
+
         <button
           type="submit"
           className="w-full bg-tenant-primary hover:bg-tenant-primary/90 text-white font-bold py-3 rounded-xl shadow-lg shadow-tenant-primary/20 transition-all mt-6"
         >
-          Sign In
+          {isSignUp ? 'Sign Up' : 'Sign In'}
         </button>
       </form>
 
@@ -41,10 +100,11 @@ export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
         <span className="border-b border-tenant-primary/20 w-1/4"></span>
       </div>
 
-      <form action={signInWithGoogle.bind(null, tenantSlug)}>
+      <form action={supabaseSignInWithGoogle.bind(null, tenantSlug)}>
         <button
           type="submit"
-          className="w-full bg-white hover:bg-gray-100 text-gray-900 font-bold py-3 rounded-xl shadow-lg transition-all mt-6 flex items-center justify-center gap-3"
+          disabled={!!tenantSlug} // Disable Google Auth for tenants for now
+          className={`w-full bg-white hover:bg-gray-100 text-gray-900 font-bold py-3 rounded-xl shadow-lg transition-all mt-6 flex items-center justify-center gap-3 ${tenantSlug ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -52,7 +112,7 @@ export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
           </svg>
-          Google
+          Google {tenantSlug && '(Coming Soon)'}
         </button>
       </form>
     </div>
