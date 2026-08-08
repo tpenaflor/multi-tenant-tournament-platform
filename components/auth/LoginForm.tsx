@@ -4,6 +4,7 @@ export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
   return (
     <div className="w-full">
       <form action={login} className="space-y-4">
+        {tenantSlug && <input type="hidden" name="tenantSlug" value={tenantSlug} />}
         <div>
           <label className="block text-sm font-medium text-tenant-text/90 mb-1" htmlFor="email">Email</label>
           <input

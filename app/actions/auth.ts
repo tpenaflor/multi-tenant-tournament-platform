@@ -9,6 +9,8 @@ export async function login(formData: FormData) {
   const email = rawEmail?.toLowerCase().trim() || '';
   const password = formData.get('password') as string;
 
+  const tenantSlug = formData.get('tenantSlug') as string | undefined;
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -36,9 +38,25 @@ export async function login(formData: FormData) {
     return redirect('/platform-admin');
   }
 
+  // If they logged in on a specific tenant site, don't redirect them across tenants
+  if (tenantSlug) {
+    // Check if they are an organizer for THIS tenant
+    const isOrganizerForThisTenant = user?.organizationMembers?.some(m => m.organization.slug === tenantSlug);
+    if (isOrganizerForThisTenant) {
+      return redirect('/dashboard');
+    }
+    // Otherwise, they just logged in as a player, stay on the tenant site
+    return redirect('/');
+  }
+
+  // If they logged in on the main platform, redirect them to their primary organization if they have one
   if (user?.organizationMembers && user.organizationMembers.length > 0) {
     const org = user.organizationMembers[0].organization;
-    return redirect(`/tenant/${org.slug}/dashboard`);
+    // Construct the absolute URL to ensure we hit the correct domain
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'multi-tenant-tournament-platform.vercel.app';
+    const protocol = rootDomain.includes('localhost') ? 'http' : 'https';
+    const orgDomain = org.customDomain || `${org.slug}.${rootDomain}`;
+    return redirect(`${protocol}://${orgDomain}/dashboard`);
   }
 
   if (!user) {

@@ -58,6 +58,14 @@ export default function middleware(req: NextRequest) {
       !hostWithoutPort.endsWith(`.${rootDomain}`)
     );
 
+  // Prevent accessing platform-admin from a tenant domain by redirecting to the main domain
+  if (url.pathname.startsWith('/platform-admin') && !isMainDomain) {
+    // Use the configured root domain or fallback to the vercel domain
+    const mainHost = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'multi-tenant-tournament-platform.vercel.app';
+    const protocol = mainHost.includes('localhost') ? 'http' : 'https';
+    return NextResponse.redirect(new URL(url.pathname, `${protocol}://${mainHost}`));
+  }
+
   if (isMainDomain || isSystemPath) {
     return NextResponse.next();
   }
