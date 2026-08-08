@@ -35,13 +35,21 @@ describe('Middleware Multi-Tenant Domain Routing', () => {
     expect(res.headers.get('x-middleware-rewrite')).toBeNull();
   });
 
-  it('allows production root domains (tron-solutions.cc and tron-solution.cc)', () => {
-    for (const host of ['tron-solutions.cc', 'www.tron-solutions.cc', 'tron-solution.cc', 'www.tron-solution.cc']) {
+  it('rewrites custom tenant domains (tron-solutions.cc and tron-solution.cc)', () => {
+    const testCases = [
+      { host: 'tron-solutions.cc', expected: '/tenant/tron-solutions' },
+      { host: 'www.tron-solutions.cc', expected: '/tenant/tron-solutions' },
+      { host: 'tron-solution.cc', expected: '/tenant/tron-solution' },
+      { host: 'www.tron-solution.cc', expected: '/tenant/tron-solution' }
+    ];
+
+    for (const { host, expected } of testCases) {
       const req = new NextRequest(`https://${host}/`, {
         headers: { host },
       });
       const res = middleware(req);
-      expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+      const rewriteHeader = res.headers.get('x-middleware-rewrite');
+      expect(rewriteHeader).toContain(expected);
     }
   });
 

@@ -73,3 +73,12 @@ export async function toggleOrganizationStatus(id: string, isActive: boolean) {
   revalidatePath('/platform-admin');
   return org;
 }
+
+export async function updateOrganizationCustomDomain(id: string, customDomain: string | null) {
+  const org = await prisma.organization.update({
+    where: { id },
+    data: { customDomain: customDomain || null }, // Ensure empty string becomes null
+  });
+  revalidatePath('/platform-admin');
+  return org;
+}

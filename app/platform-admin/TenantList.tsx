@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { toggleOrganizationStatus, addOrganization } from './actions';
+import { toggleOrganizationStatus, addOrganization, updateOrganizationCustomDomain } from './actions';
 
 type Organization = {
   id: string;
   name: string;
   slug: string;
+  customDomain: string | null;
   isActive: boolean;
   createdAt: Date;
 };
@@ -18,6 +19,9 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newSlug, setNewSlug] = useState('');
+  
+  const [editingDomainId, setEditingDomainId] = useState<string | null>(null);
+  const [editingDomainValue, setEditingDomainValue] = useState('');
 
   const handleToggle = (id: string, currentStatus: boolean) => {
     startTransition(async () => {
@@ -49,6 +53,21 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const handleSaveDomain = async (id: string) => {
+    startTransition(async () => {
+      setOrganizations((orgs) =>
+        orgs.map((o) => o.id === id ? { ...o, customDomain: editingDomainValue || null } : o)
+      );
+      try {
+        await updateOrganizationCustomDomain(id, editingDomainValue || null);
+        setEditingDomainId(null);
+      } catch (error) {
+        console.error('Failed to update custom domain', error);
+        setOrganizations(initialOrganizations);
+      }
+    });
   };
 
   return (
@@ -88,11 +107,12 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left min-w-[600px]">
+        <table className="w-full text-left min-w-[800px]">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
               <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Tenant Name</th>
               <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Slug</th>
+              <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Custom Domain</th>
               <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Created At</th>
               <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Status</th>
               <th className="px-6 py-4 font-semibold text-slate-600 text-sm text-right">Actions</th>
@@ -103,6 +123,46 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
               <tr key={org.id} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-6 py-4 text-slate-900 font-medium">{org.name}</td>
                 <td className="px-6 py-4 text-slate-500 font-mono text-sm">{org.slug}</td>
+                <td className="px-6 py-4 text-slate-500 text-sm">
+                  {editingDomainId === org.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editingDomainValue}
+                        onChange={(e) => setEditingDomainValue(e.target.value)}
+                        placeholder="e.g. example.com"
+                        className="px-2 py-1 border border-slate-300 rounded text-slate-900 text-sm w-40"
+                      />
+                      <button 
+                        onClick={() => handleSaveDomain(org.id)}
+                        className="text-emerald-600 hover:text-emerald-700 font-medium"
+                      >
+                        Save
+                      </button>
+                      <button 
+                        onClick={() => setEditingDomainId(null)}
+                        className="text-slate-400 hover:text-slate-600 font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className={org.customDomain ? 'font-mono' : 'text-slate-400 italic'}>
+                        {org.customDomain || 'None'}
+                      </span>
+                      <button 
+                        onClick={() => {
+                          setEditingDomainId(org.id);
+                          setEditingDomainValue(org.customDomain || '');
+                        }}
+                        className="text-sky-600 hover:text-sky-700 text-xs font-medium"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-slate-500 text-sm">{new Date(org.createdAt).toLocaleDateString()}</td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${org.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
@@ -122,7 +182,7 @@ export default function TenantList({ initialOrganizations }: { initialOrganizati
             ))}
             {organizations.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                   No tenants found. Add one above to get started.
                 </td>
               </tr>
