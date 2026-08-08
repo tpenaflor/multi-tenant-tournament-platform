@@ -5,39 +5,39 @@ export default function LoginForm({ tenantSlug }: { tenantSlug?: string }) {
     <div className="w-full">
       <form action={login} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="email">Email</label>
+          <label className="block text-sm font-medium text-tenant-text/90 mb-1" htmlFor="email">Email</label>
           <input
             id="email"
             name="email"
             type="email"
             required
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-shadow"
+            className="w-full bg-tenant-bg/50 border border-tenant-primary/30 rounded-xl px-4 py-3 text-tenant-text focus:outline-none focus:ring-2 focus:ring-tenant-primary transition-shadow"
             placeholder="name@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="password">Password</label>
+          <label className="block text-sm font-medium text-tenant-text/90 mb-1" htmlFor="password">Password</label>
           <input
             id="password"
             name="password"
             type="password"
             required
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-shadow"
+            className="w-full bg-tenant-bg/50 border border-tenant-primary/30 rounded-xl px-4 py-3 text-tenant-text focus:outline-none focus:ring-2 focus:ring-tenant-primary transition-shadow"
             placeholder="••••••••"
           />
         </div>
         <button
           type="submit"
-          className="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-sky-500/20 transition-all mt-6"
+          className="w-full bg-tenant-primary hover:bg-tenant-primary/90 text-white font-bold py-3 rounded-xl shadow-lg shadow-tenant-primary/20 transition-all mt-6"
         >
           Sign In
         </button>
       </form>
 
       <div className="mt-8 flex items-center justify-between">
-        <span className="border-b border-slate-800 w-1/4"></span>
-        <span className="text-xs text-center text-slate-500 uppercase font-medium">or continue with</span>
-        <span className="border-b border-slate-800 w-1/4"></span>
+        <span className="border-b border-tenant-primary/20 w-1/4"></span>
+        <span className="text-xs text-center text-tenant-text/50 uppercase font-medium">or continue with</span>
+        <span className="border-b border-tenant-primary/20 w-1/4"></span>
       </div>
 
       <form action={signInWithGoogle.bind(null, tenantSlug)}>

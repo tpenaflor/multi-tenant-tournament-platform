@@ -3,8 +3,12 @@ import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
 import BuilderClient from './BuilderClient';
 
-export default async function BuilderPage({ searchParams }: { searchParams: Promise<{ tournament?: string }> }) {
-  const { tournament: tournamentId } = await searchParams;
+export default async function BuilderPage(props: {
+  params: Promise<{ tenantSlug: string }>;
+  searchParams: Promise<{ tournament?: string }>;
+}) {
+  const { tenantSlug } = await props.params;
+  const { tournament: tournamentId } = await props.searchParams;
   
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -13,31 +17,44 @@ export default async function BuilderPage({ searchParams }: { searchParams: Prom
     redirect('/');
   }
 
-  // Fetch the user's organization
+  // Fetch the organization by tenantSlug
+  const org = await prisma.organization.findFirst({
+    where: {
+      OR: [
+        { slug: tenantSlug },
+        { customDomain: tenantSlug },
+        ...(tenantSlug.includes('.') ? [] : [{ customDomain: { startsWith: `${tenantSlug}.` } }]),
+      ],
+    }
+  });
+
+  if (!org) {
+    return <div>Organization not found</div>;
+  }
+
+  // Check if user is an organizer of THIS organization
   const dbUser = await prisma.user.findUnique({
     where: { email: user.email! },
     include: {
       organizationMembers: {
-        where: { role: 'ORGANIZER' },
-        include: { organization: true }
+        where: { 
+          organizationId: org.id,
+          role: 'ORGANIZER' 
+        },
       }
     },
   });
 
-  const activeOrgMember = dbUser?.organizationMembers?.[0];
-
-  if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
+  if (!dbUser || !dbUser.organizationMembers || dbUser.organizationMembers.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-tenant-bg text-tenant-text p-6">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-white">Access Denied</h1>
-          <p className="text-slate-400">You must be an organizer of an organization to use the Builder.</p>
+          <p className="text-tenant-text/70">You must be an organizer of this organization to use the Builder.</p>
         </div>
       </div>
     );
   }
-
-  const org = activeOrgMember.organization;
 
   // Fetch the current page layout, or fall back to default components
   let initialComponents: any[] = [];

@@ -5,6 +5,17 @@
 :root {
   --background: #0f172a;
   --foreground: #f8fafc;
+  --tenant-primary: #0ea5e9;
+  --tenant-bg: #020617;
+  --tenant-text: #f8fafc;
+  --tenant-accent: #ec4899;
+  --tenant-bg-alt: #0f172a;
+  --tenant-border: #334155;
+  --tenant-font-sans: ui-sans-serif, system-ui, sans-serif;
+  --tenant-font-serif: ui-serif, Georgia, serif;
+  --tenant-primary-rgb: 14 165 233;
+  --tenant-bg-rgb: 2 6 23;
+  --tenant-text-rgb: 248 250 252;
 }
 
 body {

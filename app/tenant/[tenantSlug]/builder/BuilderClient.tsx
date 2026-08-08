@@ -113,10 +113,10 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
     setSavedStatus(null);
 
     // Save page layout
-    const response = await savePageLayout(components, tournamentId);
+    const response = await savePageLayout(tenantSlug, components, tournamentId);
 
     // Save theme
-    const themeResponse = await saveTenantTheme(JSON.stringify(theme));
+    const themeResponse = await saveTenantTheme(tenantSlug, JSON.stringify(theme));
 
     setIsSaving(false);
     if (response.success && themeResponse.success) {
@@ -180,31 +180,34 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
   const handleApplyTemplate = (template: TournamentTemplate) => {
     if (window.confirm('Applying a template will replace all current components. Continue?')) {
       setComponents([...template.components]);
+      if (template.theme) {
+        setTheme({ ...theme, ...template.theme });
+      }
       setShowTemplateModal(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-tenant-bg text-tenant-text flex flex-col">
       {/* Top Navbar */}
-      <header className="h-16 border-b border-slate-800 bg-slate-900/90 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
+      <header className="h-16 border-b border-tenant-border bg-tenant-bg-alt/90 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-black text-slate-950 shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-tenant-primary flex items-center justify-center font-black text-white shrink-0">
             <PaintbrushIcon size={18} />
           </div>
           <div>
             <h1 className="font-bold text-white text-base leading-none truncate max-w-[180px] sm:max-w-none">
               {tournamentId ? 'Tournament Page Builder' : 'Home Page Builder'}
             </h1>
-            <span className="text-xs text-slate-400 truncate block max-w-[180px] sm:max-w-none">Tenant Workspace ({tenantSlug})</span>
+            <span className="text-xs text-tenant-text/70 truncate block max-w-[180px] sm:max-w-none">Tenant Workspace ({tenantSlug})</span>
           </div>
         </div>
 
         {/* Desktop Header Actions */}
         <div className="hidden lg:flex items-center gap-3">
           <a
-            href="/dashboard"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium transition-all mr-2"
+            href={`/tenant/${tenantSlug}/dashboard`}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/90 text-sm font-medium transition-all mr-2"
           >
             ← Back to Dashboard
           </a>
@@ -217,7 +220,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           <a
             href={tournamentSlug ? `/tenant/${tenantSlug}/tournaments/${tournamentSlug}` : `/tenant/${tenantSlug}`}
             target="_blank"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-tenant-primary/10 hover:bg-tenant-primary/30 text-tenant-text text-sm font-medium border border-tenant-border transition-all"
           >
             <EyeIcon size={16} />
             Preview Live Site
@@ -225,28 +228,30 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 disabled:bg-sky-500/50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm shadow-md transition-all"
+            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-tenant-primary hover:bg-tenant-primary/80 disabled:bg-tenant-primary/50 disabled:cursor-not-allowed text-white font-bold text-sm shadow-md transition-all"
           >
             <SaveIcon size={16} />
             {isSaving ? 'Saving...' : 'Save Layout'}
           </button>
-          <div className="w-px h-6 bg-slate-800 mx-1"></div>
-          <button
-            onClick={() => setShowThemeModal(true)}
-            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all"
-            title="Theme Settings"
-          >
-            <SettingsIcon size={20} />
-          </button>
+          <div className="w-px h-6 bg-tenant-primary/10 mx-1"></div>
+          {!tournamentId && (
+            <button 
+              onClick={() => setShowThemeModal(true)}
+              className="w-8 h-8 rounded-lg bg-tenant-primary/10 hover:bg-tenant-primary/30 text-tenant-text/70 hover:text-white flex items-center justify-center transition-colors"
+              title="Theme Settings"
+            >
+              <SettingsIcon size={18} />
+            </button>
+          )}
           <a
             href="/settings"
-            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-all"
+            className="p-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/70 hover:text-tenant-text transition-all"
             title="Account Settings"
           >
             <SettingsIcon size={20} />
           </a>
           <form action={logout}>
-            <button className="px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-sm font-medium transition-all">
+            <button className="px-4 py-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/70 hover:text-tenant-text text-sm font-medium transition-all">
               Logout
             </button>
           </form>
@@ -262,14 +267,14 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="p-2 rounded-lg bg-sky-500 text-slate-950 shadow-md disabled:bg-sky-500/50 flex items-center gap-1"
+            className="p-2 rounded-lg bg-tenant-primary text-white shadow-md disabled:bg-tenant-primary/50 flex items-center gap-1"
             title="Save Layout"
           >
             <SaveIcon size={16} />
           </button>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
+            className="p-2 text-tenant-text/90 hover:text-white hover:bg-tenant-primary/10 rounded-lg"
           >
             {isMobileMenuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
           </button>
@@ -278,37 +283,39 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
 
       {/* Mobile Nav Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-slate-900 border-b border-slate-800 p-4 flex flex-col gap-3 shadow-xl absolute w-full z-40 top-16">
+        <div className="lg:hidden bg-tenant-bg-alt border-b border-tenant-border p-4 flex flex-col gap-3 shadow-xl absolute w-full z-40 top-16">
           <a
-            href="/dashboard"
-            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
+            href={`/tenant/${tenantSlug}/dashboard`}
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/90 text-sm font-medium"
           >
             ← Back to Dashboard
           </a>
           <a
             href={tournamentSlug ? `/tenant/${tenantSlug}/tournaments/${tournamentSlug}` : `/tenant/${tenantSlug}`}
             target="_blank"
-            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/90 text-sm font-medium"
           >
             <EyeIcon size={16} />
             Preview Live Site
           </a>
-          <button
-            onClick={() => { setShowThemeModal(true); setIsMobileMenuOpen(false); }}
-            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium w-full text-left"
-          >
-            <SettingsIcon size={16} />
-            Theme Settings
-          </button>
+          {!tournamentId && (
+            <button
+              onClick={() => { setShowThemeModal(true); setIsMobileMenuOpen(false); }}
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/90 text-sm font-medium w-full text-left"
+            >
+              <SettingsIcon size={16} />
+              Theme Settings
+            </button>
+          )}
           <a
             href="/settings"
-            className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-slate-300 text-sm font-medium"
+            className="flex items-center gap-2 p-2 rounded-lg hover:bg-tenant-primary/10 text-tenant-text/90 text-sm font-medium"
           >
             <SettingsIcon size={16} />
             Account Settings
           </a>
           <form action={logout}>
-            <button className="w-full text-left flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 text-rose-400 text-sm font-medium">
+            <button className="w-full text-left flex items-center gap-2 p-2 rounded-lg hover:bg-tenant-primary/10 text-rose-400 text-sm font-medium">
               Logout
             </button>
           </form>
@@ -316,11 +323,11 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
       )}
 
       {/* Mobile Tab Switcher */}
-      <div className="lg:hidden flex bg-slate-900 border-b border-slate-800 text-sm z-30 relative shrink-0">
-        <button onClick={() => setMobileTab('palette')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'palette' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
+      <div className="lg:hidden flex bg-tenant-bg-alt border-b border-tenant-border text-sm z-30 relative shrink-0">
+        <button onClick={() => setMobileTab('palette')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'palette' ? 'border-tenant-primary text-tenant-primary' : 'border-transparent text-tenant-text/70'}`}>
           Palette
         </button>
-        <button onClick={() => setMobileTab('canvas')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'canvas' ? 'border-sky-500 text-sky-400' : 'border-transparent text-slate-400'}`}>
+        <button onClick={() => setMobileTab('canvas')} className={`flex-1 py-3 text-center font-semibold border-b-2 transition-colors ${mobileTab === 'canvas' ? 'border-tenant-primary text-tenant-primary' : 'border-transparent text-tenant-text/70'}`}>
           Canvas
         </button>
       </div>
@@ -328,15 +335,15 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
       {/* Main Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar: Component Palette */}
-        <aside className={`${mobileTab === 'palette' ? 'flex w-full' : 'hidden'} lg:flex ${isSidebarOpen ? 'lg:w-72 p-5' : 'lg:w-16 lg:p-4 flex-col items-center'} border-r border-slate-800 bg-slate-900/50 transition-all duration-300 overflow-y-auto overflow-x-hidden relative shrink-0`}>
+        <aside className={`${mobileTab === 'palette' ? 'flex w-full' : 'hidden'} lg:flex ${isSidebarOpen ? 'lg:w-72 p-5' : 'lg:w-16 lg:p-4 flex-col items-center'} border-r border-tenant-border bg-tenant-bg-alt/50 transition-all duration-300 overflow-y-auto overflow-x-hidden relative shrink-0`}>
           {isSidebarOpen ? (
             <div className="space-y-6 w-full whitespace-nowrap">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-tenant-text/70 flex items-center gap-2">
                   <LayoutIcon size={14} />
                   Add Components
                 </h3>
-                <button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1 rounded-md hover:bg-slate-800" title="Collapse Sidebar">
+                <button onClick={() => setIsSidebarOpen(false)} className="text-tenant-text/70 hover:text-white transition-colors p-1 rounded-md hover:bg-tenant-primary/10" title="Collapse Sidebar">
                   <PanelLeftCloseIcon size={16} />
                 </button>
               </div>
@@ -352,13 +359,13 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               </button>
 
               <div className="mb-4 relative">
-                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-tenant-text/50" />
                 <input
                   type="text"
                   placeholder="Search components..."
                   value={componentSearchQuery}
                   onChange={(e) => setComponentSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 placeholder-slate-500"
+                  className="w-full bg-tenant-bg border border-tenant-border rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary placeholder-tenant-text/50"
                 />
               </div>
 
@@ -379,19 +386,19 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                     <React.Fragment key={c.id}>
                       {isFirstPremium && (
                         <>
-                          <div className="my-4 h-px bg-slate-800/50 w-full"></div>
-                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4">Premium Components</h4>
+                          <div className="my-4 h-px bg-tenant-primary/10/50 w-full"></div>
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-tenant-text/50 mb-2 mt-4">Premium Components</h4>
                         </>
                       )}
                       <button
                         onClick={() => addComponent(c.id as any)}
-                        className="w-full text-left p-3 rounded-xl bg-slate-800/80 hover:bg-sky-600/20 hover:border-sky-500/50 border border-slate-700/80 transition-all group flex items-center justify-between"
+                        className="w-full text-left p-3 rounded-xl bg-tenant-primary/10/80 hover:bg-tenant-primary/20 hover:border-tenant-primary/50 border border-tenant-border/80 transition-all group flex items-center justify-between"
                       >
                         <div>
-                          <div className="font-semibold text-sm text-white group-hover:text-sky-400">{c.title}</div>
-                          <div className="text-xs text-slate-400">{c.description}</div>
+                          <div className="font-semibold text-sm text-white group-hover:text-tenant-primary">{c.title}</div>
+                          <div className="text-xs text-tenant-text/70">{c.description}</div>
                         </div>
-                        <PlusIcon size={16} className="text-slate-400 group-hover:text-sky-400" />
+                        <PlusIcon size={16} className="text-tenant-text/70 group-hover:text-tenant-primary" />
                       </button>
                     </React.Fragment>
                   );
@@ -400,30 +407,30 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 {showAiComponent && (
                   <button
                     onClick={() => addComponent('AIDynamicBlock')}
-                    className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-sky-900/40 to-indigo-900/40 hover:from-sky-800/60 hover:to-indigo-800/60 border border-sky-500/40 transition-all group flex items-center justify-between mt-4"
+                    className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-sky-900/40 to-indigo-900/40 hover:from-sky-800/60 hover:to-indigo-800/60 border border-tenant-primary/40 transition-all group flex items-center justify-between mt-4"
                   >
                     <div>
                       <div className="font-semibold text-sm text-sky-300 group-hover:text-white flex items-center gap-1.5">
                         <span>✨ AI Custom Component</span>
                       </div>
-                      <div className="text-xs text-slate-400">Prompt or upload screenshot</div>
+                      <div className="text-xs text-tenant-text/70">Prompt or upload screenshot</div>
                     </div>
-                    <PlusIcon size={16} className="text-sky-400 group-hover:text-white" />
+                    <PlusIcon size={16} className="text-tenant-primary group-hover:text-white" />
                   </button>
                 )}
               </div>
             </div>
           ) : (
-            <button onClick={() => setIsSidebarOpen(true)} className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800/80" title="Expand Sidebar">
+            <button onClick={() => setIsSidebarOpen(true)} className="text-tenant-text/70 hover:text-white transition-colors p-2 rounded-lg hover:bg-tenant-primary/10/80" title="Expand Sidebar">
               <PanelLeftOpenIcon size={20} />
             </button>
           )}
         </aside>
 
         {/* Center Canvas: Live Page Canvas with Drag and Drop */}
-        <main className={`${mobileTab === 'canvas' ? 'block' : 'hidden'} lg:block flex-1 bg-slate-950 p-4 lg:p-8 overflow-y-auto`} onClick={() => { setSelectedComponentId(null); setMobileTab('canvas'); }}>
+        <main className={`${mobileTab === 'canvas' ? 'block' : 'hidden'} lg:block flex-1 bg-tenant-bg p-4 lg:p-8 overflow-y-auto`} onClick={() => { setSelectedComponentId(null); setMobileTab('canvas'); }}>
           <div className="max-w-4xl mx-auto space-y-4">
-            <div className="text-xs text-slate-500 font-mono mb-4 uppercase tracking-widest text-center">
+            <div className="text-xs text-tenant-text/50 font-mono mb-4 uppercase tracking-widest text-center">
               Live Interactive Page Canvas ({components.length} components)
             </div>
 
@@ -443,10 +450,10 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                         e.stopPropagation();
                         setSelectedComponentId(comp.id);
                       }}
-                      className={`relative group border-2 rounded-3xl transition-all p-1 cursor-grab active:cursor-grabbing touch-manipulation ${selectedComponentId === comp.id ? 'border-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.15)]' : 'border-transparent hover:border-sky-500/50'}`}
+                      className={`relative group border-2 rounded-3xl transition-all p-1 cursor-grab active:cursor-grabbing touch-manipulation ${selectedComponentId === comp.id ? 'border-tenant-primary shadow-[0_0_0_4px_rgba(14,165,233,0.15)]' : 'border-transparent hover:border-tenant-primary/50'}`}
                     >
                       {/* Component Action Controls */}
-                      <div className={`absolute top-4 right-4 z-20 transition-opacity bg-slate-900/90 border border-slate-700 p-1.5 rounded-xl flex items-center gap-1 shadow-xl backdrop-blur-md ${selectedComponentId === comp.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                      <div className={`absolute top-4 right-4 z-20 transition-opacity bg-tenant-bg-alt/90 border border-tenant-border p-1.5 rounded-xl flex items-center gap-1 shadow-xl backdrop-blur-md ${selectedComponentId === comp.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                         <button
                           onClick={(e) => removeComponent(comp.id, e)}
                           className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg"
@@ -476,15 +483,15 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               onClick={() => setShowThemeModal(false)}
             ></div>
 
-            <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+            <div className="relative bg-tenant-bg-alt border border-tenant-border rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-tenant-border bg-tenant-primary/10/50">
                 <div className="flex items-center gap-2">
-                  <PaintbrushIcon size={18} className="text-sky-400" />
+                  <PaintbrushIcon size={18} className="text-tenant-primary" />
                   <h3 className="font-bold text-white text-sm">Tenant Global Theme</h3>
                 </div>
                 <button
                   onClick={() => setShowThemeModal(false)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 text-tenant-text/70 hover:text-white hover:bg-tenant-primary/30 rounded-lg transition-colors"
                 >
                   <XIcon size={18} />
                 </button>
@@ -492,53 +499,63 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
 
               <div className="p-5 overflow-y-auto space-y-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Primary Color</label>
+                  <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Logo URL (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/logo.png"
+                    value={theme.logoUrl || ''}
+                    onChange={(e) => setTheme({ ...theme, logoUrl: e.target.value })}
+                    className="w-full bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Primary Color</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
                       value={theme.primaryColor || '#0ea5e9'}
                       onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700"
+                      className="w-10 h-10 rounded cursor-pointer bg-tenant-bg border border-tenant-border"
                     />
                     <input
                       type="text"
                       value={theme.primaryColor || '#0ea5e9'}
                       onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
+                      className="flex-1 bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary font-mono uppercase"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Background Color</label>
+                  <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Background Color</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
                       value={theme.backgroundColor || '#020617'}
                       onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700"
+                      className="w-10 h-10 rounded cursor-pointer bg-tenant-bg border border-tenant-border"
                     />
                     <input
                       type="text"
                       value={theme.backgroundColor || '#020617'}
                       onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
+                      className="flex-1 bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary font-mono uppercase"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Text Color</label>
+                  <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Text Color</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
                       value={theme.textColor || '#f8fafc'}
                       onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                      className="w-10 h-10 rounded cursor-pointer bg-slate-950 border border-slate-700"
+                      className="w-10 h-10 rounded cursor-pointer bg-tenant-bg border border-tenant-border"
                     />
                     <input
                       type="text"
                       value={theme.textColor || '#f8fafc'}
                       onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 font-mono uppercase"
+                      className="flex-1 bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary font-mono uppercase"
                     />
                   </div>
                 </div>
@@ -547,10 +564,10 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 </div>
               </div>
 
-              <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end shrink-0">
+              <div className="p-4 border-t border-tenant-border bg-tenant-primary/10/30 flex justify-end shrink-0">
                 <button
                   onClick={() => setShowThemeModal(false)}
-                  className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-md"
+                  className="px-6 py-2 bg-tenant-primary hover:bg-tenant-primary/80 text-white text-sm font-bold rounded-lg transition-colors shadow-md"
                 >
                   Done
                 </button>
@@ -566,15 +583,15 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               onClick={() => setSelectedComponentId(null)}
             ></div>
 
-            <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+            <div className="relative bg-tenant-bg-alt border border-tenant-border rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-tenant-border bg-tenant-primary/10/50">
                 <div className="flex items-center gap-2">
-                  <SettingsIcon size={18} className="text-sky-400" />
+                  <SettingsIcon size={18} className="text-tenant-primary" />
                   <h3 className="font-bold text-white text-sm">Edit Component Properties</h3>
                 </div>
                 <button
                   onClick={() => setSelectedComponentId(null)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 text-tenant-text/70 hover:text-white hover:bg-tenant-primary/30 rounded-lg transition-colors"
                 >
                   <XIcon size={18} />
                 </button>
@@ -582,10 +599,10 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
 
               <div className="p-5 overflow-y-auto">
                 <div className="space-y-4">
-                  <div className="bg-slate-800/80 border border-slate-700 rounded-lg p-3 mb-6">
-                    <span className="text-xs text-slate-400 uppercase tracking-widest">Editing</span>
-                    <div className="font-bold text-sky-400">{selectedComponent.type}</div>
-                    <div className="text-xs text-slate-500 font-mono mt-1">{selectedComponent.id}</div>
+                  <div className="bg-tenant-primary/10/80 border border-tenant-border rounded-lg p-3 mb-6">
+                    <span className="text-xs text-tenant-text/70 uppercase tracking-widest">Editing</span>
+                    <div className="font-bold text-tenant-primary">{selectedComponent.type}</div>
+                    <div className="text-xs text-tenant-text/50 font-mono mt-1">{selectedComponent.id}</div>
                   </div>
 
                   {/* Dynamic Form based on component type */}
@@ -599,13 +616,13 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                           if (field.type === 'text') {
                             return (
                               <div key={field.name}>
-                                <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-tenant-text/90 mb-1">{field.label}</label>
                                 <input
                                   id={`field-${field.name}`}
                                   type="text"
                                   value={selectedComponent.props[field.name] || ''}
                                   onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
-                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                                  className="w-full bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary"
                                 />
                               </div>
                             );
@@ -614,12 +631,12 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                           if (field.type === 'textarea') {
                             return (
                               <div key={field.name}>
-                                <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                <label htmlFor={`field-${field.name}`} className="block text-xs font-semibold text-tenant-text/90 mb-1">{field.label}</label>
                                 <textarea
                                   id={`field-${field.name}`}
                                   value={selectedComponent.props[field.name] || ''}
                                   onChange={(e) => updateSelectedComponentProp(field.name, e.target.value)}
-                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-24 resize-none"
+                                  className="w-full bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary h-24 resize-none"
                                 />
                               </div>
                             );
@@ -628,12 +645,12 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                           if (field.type === 'tags') {
                             return (
                               <div key={field.name}>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">{field.label}</label>
+                                <label className="block text-xs font-semibold text-tenant-text/90 mb-1">{field.label}</label>
                                 <input
                                   type="text"
                                   value={(selectedComponent.props[field.name] || []).join(', ')}
                                   onChange={(e) => updateSelectedComponentProp(field.name, e.target.value.split(',').map(s => s.trim()))}
-                                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                                  className="w-full bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary"
                                 />
                               </div>
                             );
@@ -645,34 +662,34 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                 {[0, 1, 2].map(idx => {
                                   const item = (selectedComponent.props[field.name] || [])[idx] || { title: '', subtitle: '', description: '', highlight: false };
                                   return (
-                                    <div key={idx} className="space-y-2 border border-slate-700 p-3 rounded-lg bg-slate-950/50">
-                                      <div className="font-bold text-xs text-slate-400 mb-2">Item 0{idx + 1}</div>
+                                    <div key={idx} className="space-y-2 border border-tenant-border p-3 rounded-lg bg-tenant-bg/50">
+                                      <div className="font-bold text-xs text-tenant-text/70 mb-2">Item 0{idx + 1}</div>
                                       <div>
-                                        <label className="block text-xs font-semibold text-slate-300 mb-1">Title</label>
+                                        <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Title</label>
                                         <input type="text" value={item.title || ''} onChange={(e) => {
                                           const newItems = [...(selectedComponent.props[field.name] || [])];
                                           if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
                                           newItems[idx].title = e.target.value;
                                           updateSelectedComponentProp(field.name, newItems);
-                                        }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                        }} className="w-full bg-tenant-bg-alt border border-tenant-border rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-tenant-primary" />
                                       </div>
                                       <div>
-                                        <label className="block text-xs font-semibold text-slate-300 mb-1">Subtitle</label>
+                                        <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Subtitle</label>
                                         <input type="text" value={item.subtitle || ''} onChange={(e) => {
                                           const newItems = [...(selectedComponent.props[field.name] || [])];
                                           if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
                                           newItems[idx].subtitle = e.target.value;
                                           updateSelectedComponentProp(field.name, newItems);
-                                        }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                        }} className="w-full bg-tenant-bg-alt border border-tenant-border rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-tenant-primary" />
                                       </div>
                                       <div>
-                                        <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                                        <label className="block text-xs font-semibold text-tenant-text/90 mb-1">Description</label>
                                         <input type="text" value={item.description || ''} onChange={(e) => {
                                           const newItems = [...(selectedComponent.props[field.name] || [])];
                                           if (!newItems[idx]) newItems[idx] = { title: '', subtitle: '', description: '', highlight: false };
                                           newItems[idx].description = e.target.value;
                                           updateSelectedComponentProp(field.name, newItems);
-                                        }} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-sky-500" />
+                                        }} className="w-full bg-tenant-bg-alt border border-tenant-border rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-tenant-primary" />
                                       </div>
                                     </div>
                                   );
@@ -685,21 +702,21 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                             return (
                               <div key={field.name} className="space-y-4">
                                 <div>
-                                  <label className="block text-xs font-semibold text-sky-400 mb-1">AI Prompt</label>
+                                  <label className="block text-xs font-semibold text-tenant-primary mb-1">AI Prompt</label>
                                   <textarea
                                     value={selectedComponent.props.prompt || ''}
                                     onChange={(e) => updateSelectedComponentProp('prompt', e.target.value)}
                                     placeholder="e.g. Prize pool breakdown with 3 tier cards, FAQ accordion, Schedule timeline..."
-                                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500 h-20 resize-none"
+                                    className="w-full bg-tenant-bg border border-tenant-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-tenant-primary h-20 resize-none"
                                   />
                                 </div>
 
                                 <div>
-                                  <label className="block text-xs font-semibold text-sky-400 mb-1">
+                                  <label className="block text-xs font-semibold text-tenant-primary mb-1">
                                     Reference Image / Wireframe (Vision Input)
                                   </label>
                                   {selectedImageBase64 ? (
-                                    <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-slate-950 p-2 group">
+                                    <div className="relative rounded-lg overflow-hidden border border-tenant-border bg-tenant-bg p-2 group">
                                       <img
                                         src={selectedImageBase64}
                                         alt="Reference visual layout"
@@ -714,10 +731,10 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                       </button>
                                     </div>
                                   ) : (
-                                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer bg-slate-950/60 hover:bg-slate-900 hover:border-sky-500/50 transition-all text-center p-3">
+                                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-tenant-border rounded-lg cursor-pointer bg-tenant-bg/60 hover:bg-tenant-bg-alt hover:border-tenant-primary/50 transition-all text-center p-3">
                                       <div className="flex flex-col items-center justify-center">
-                                        <span className="text-xs font-semibold text-slate-300">🖼️ Upload screenshot / wireframe</span>
-                                        <span className="text-[10px] text-slate-500 mt-1">PNG, JPG, WEBP</span>
+                                        <span className="text-xs font-semibold text-tenant-text/90">🖼️ Upload screenshot / wireframe</span>
+                                        <span className="text-[10px] text-tenant-text/50 mt-1">PNG, JPG, WEBP</span>
                                       </div>
                                       <input
                                         type="file"
@@ -732,7 +749,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                                 <button
                                   onClick={() => handleGenerateAi(selectedComponent.props.prompt || '')}
                                   disabled={isGeneratingAi || (!selectedComponent.props.prompt && !selectedImageBase64)}
-                                  className="w-full py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                                  className="w-full py-2.5 rounded-lg bg-gradient-to-r from-tenant-primary to-indigo-500 hover:from-tenant-primary/80 hover:to-indigo-400 disabled:opacity-50 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
                                 >
                                   <span>✨</span>
                                   {isGeneratingAi ? 'Generating UI...' : 'Generate with AI'}
@@ -754,7 +771,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 </div>
               </div>
 
-              <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-between items-center shrink-0">
+              <div className="p-4 border-t border-tenant-border bg-tenant-primary/10/30 flex justify-between items-center shrink-0">
                 <button
                   onClick={(e) => removeComponent(selectedComponent.id, e)}
                   className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
@@ -764,7 +781,7 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                 </button>
                 <button
                   onClick={() => setSelectedComponentId(null)}
-                  className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-md"
+                  className="px-6 py-2 bg-tenant-primary hover:bg-tenant-primary/80 text-white text-sm font-bold rounded-lg transition-colors shadow-md"
                 >
                   Done
                 </button>
@@ -781,15 +798,15 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               onClick={() => setShowTemplateModal(false)}
             ></div>
 
-            <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/50">
+            <div className="relative bg-tenant-bg-alt border border-tenant-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-tenant-border bg-tenant-primary/10/50">
                 <div className="flex items-center gap-2">
-                  <LayoutIcon size={18} className="text-sky-400" />
+                  <LayoutIcon size={18} className="text-tenant-primary" />
                   <h3 className="font-bold text-white text-sm">Choose a Template</h3>
                 </div>
                 <button
                   onClick={() => setShowTemplateModal(false)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 text-tenant-text/70 hover:text-white hover:bg-tenant-primary/30 rounded-lg transition-colors"
                 >
                   <XIcon size={18} />
                 </button>
@@ -800,29 +817,29 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                   <div
                     key={template.id}
                     onClick={() => handleApplyTemplate(template)}
-                    className="border border-slate-700 bg-slate-800/50 rounded-xl p-5 hover:border-sky-500 cursor-pointer transition-all hover:bg-slate-800 hover:-translate-y-1 shadow-md"
+                    className="border border-tenant-border bg-tenant-primary/10/50 rounded-xl p-5 hover:border-tenant-primary cursor-pointer transition-all hover:bg-tenant-primary/10 hover:-translate-y-1 shadow-md"
                   >
-                    <div className="h-32 bg-slate-950 rounded-lg mb-4 flex items-center justify-center border border-slate-800 overflow-hidden relative">
+                    <div className="h-32 bg-tenant-bg rounded-lg mb-4 flex items-center justify-center border border-tenant-border overflow-hidden relative">
                       {template.id === 'premium-tournament' ? (
                         <div className="w-full h-full p-2 flex flex-col gap-1">
                           <div className="w-full h-1/2 bg-sky-900/30 rounded flex items-center p-2">
-                            <div className="w-1/2 h-2 bg-slate-700 rounded"></div>
+                            <div className="w-1/2 h-2 bg-tenant-border rounded"></div>
                           </div>
-                          <div className="w-full h-2 bg-sky-500 rounded-full"></div>
+                          <div className="w-full h-2 bg-tenant-primary rounded-full"></div>
                           <div className="w-full h-1/3 flex gap-1">
-                            <div className="flex-1 bg-slate-800 rounded"></div>
-                            <div className="flex-1 bg-slate-800 rounded"></div>
+                            <div className="flex-1 bg-tenant-primary/10 rounded"></div>
+                            <div className="flex-1 bg-tenant-primary/10 rounded"></div>
                           </div>
                         </div>
                       ) : (
                         <div className="w-full h-full p-2 flex flex-col gap-2">
-                          <div className="w-full h-1/3 bg-slate-800 rounded"></div>
-                          <div className="w-full h-2/3 bg-slate-800/50 rounded"></div>
+                          <div className="w-full h-1/3 bg-tenant-primary/10 rounded"></div>
+                          <div className="w-full h-2/3 bg-tenant-primary/10/50 rounded"></div>
                         </div>
                       )}
                     </div>
                     <h4 className="font-bold text-white text-lg">{template.name}</h4>
-                    <p className="text-sm text-slate-400 mt-2">{template.description}</p>
+                    <p className="text-sm text-tenant-text/70 mt-2">{template.description}</p>
                   </div>
                 ))}
               </div>

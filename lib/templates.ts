@@ -5,6 +5,7 @@ export interface TournamentTemplate {
   name: string;
   description: string;
   components: ComponentItem[];
+  theme?: Record<string, string>;
 }
 
 export const TOURNAMENT_TEMPLATES: TournamentTemplate[] = [
@@ -89,6 +90,70 @@ export const TOURNAMENT_TEMPLATES: TournamentTemplate[] = [
           title: 'Where legends are made.',
           overline: 'Global Championship Series',
           imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
+        }
+      }
+    ],
+  },
+  {
+    id: 'social-pickle',
+    name: 'Social Pickle',
+    description: 'A vibrant, modern template inspired by The Social Pickle with customized typography and colors.',
+    theme: {
+      primaryColor: '#273300',
+      backgroundColor: '#fff9e8',
+      textColor: '#263000',
+      accentColor: '#ff617c',
+      bgAltColor: '#e2edbd',
+      borderColor: '#d9d8b6',
+      fontSans: 'Arial, Helvetica, sans-serif',
+      fontSerif: 'Georgia, "Times New Roman", serif',
+    },
+    components: [
+      {
+        id: 'comp-sp-hero',
+        type: 'ModernHero',
+        props: {
+          kicker: 'Pickleball, but make it a whole social thing.',
+          title: 'Come for the <br> <em>rally.</em> Stay for <br> the people.',
+          lede: 'A friendly club for meeting new people, finding your game, and enjoying a little healthy competition.',
+          buttonText: 'Explore events',
+          buttonLink: '/events',
+          imageSrc: '/pickle-mascot-transparent.png',
+        }
+      },
+      {
+        id: 'comp-sp-intro',
+        type: 'ModernIntro',
+        props: {
+          eyebrow: 'THE GOOD STUFF',
+          title: 'All skill levels. <br> <em>Zero pressure.</em>',
+          description: 'Whether you are brand new to pickleball or already have a wicked backhand, Social Pickle is your excuse to get out, play more, and leave with a few new group-chat notifications.',
+          linkText: 'Find an event',
+          linkHref: '/events',
+        }
+      },
+      {
+        id: 'comp-sp-event',
+        type: 'ModernEventBand',
+        props: {
+          eyebrow: 'TENTATIVE · UP NEXT',
+          title: 'The Social Pickle <br> <em>Debut</em>',
+          eventDate: 'AUG 29, 2026',
+          eventDetails: 'Tournament · Venue to be announced',
+          buttonText: 'Explore events',
+          buttonLink: '/events',
+        }
+      },
+      {
+        id: 'comp-sp-community',
+        type: 'ModernCommunity',
+        props: {
+          eyebrow: 'FIND YOUR PEOPLE',
+          title: 'Good games. <br> <em>Better company.</em>',
+          link1Text: 'Instagram',
+          link1Href: 'https://www.instagram.com/thesocialpickle.ca',
+          link2Text: 'Join us on RecClub',
+          link2Href: 'https://reclub.co/',
         }
       }
     ],

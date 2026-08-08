@@ -30,6 +30,14 @@ jest.mock('@/utils/supabase/server', () => ({
   }),
 }));
 
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  redirect: jest.fn(),
+}));
 
 describe('TenantPage', () => {
   beforeEach(() => {

@@ -19,7 +19,7 @@ export default async function PlatformAdminLayout({ children }: { children: Reac
   });
 
   if (!user?.isPlatformAdmin) {
-    redirect('/login?error=Unauthorized%20access%20-%20Platform%20Admin%20role%20required');
+    redirect('/?error=Unauthorized%20access%20-%20Platform%20Admin%20role%20required');
   }
 
   

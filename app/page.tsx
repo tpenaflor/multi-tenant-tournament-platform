@@ -12,7 +12,8 @@ export default async function Home() {
       where: { email: user.email! },
       include: {
         organizationMembers: {
-          where: { role: 'ORGANIZER' }
+          where: { role: 'ORGANIZER' },
+          include: { organization: true }
         }
       }
     });
@@ -22,7 +23,8 @@ export default async function Home() {
     }
 
     if (dbUser?.organizationMembers && dbUser.organizationMembers.length > 0) {
-      redirect('/dashboard');
+      const org = dbUser.organizationMembers[0].organization;
+      redirect(`/tenant/${org.slug}/dashboard`);
     }
 
     // Default for players logging in on the main domain

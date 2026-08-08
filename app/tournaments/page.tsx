@@ -41,7 +41,7 @@ export default function TournamentsPage() {
           <h1 className="text-3xl font-extrabold text-white">Tournament Directory & Live Brackets</h1>
         </div>
         <a
-          href="/builder"
+          href="/login"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm shadow-lg shadow-sky-500/20 transition-all self-start sm:self-auto"
         >
           <PlusIcon size={16} /> Create Tournament Event

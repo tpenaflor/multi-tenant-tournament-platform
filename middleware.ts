@@ -50,8 +50,6 @@ export default function middleware(req: NextRequest) {
   // System paths that should ALWAYS be served directly on main platform logic
   const isSystemPath = 
     url.pathname.startsWith('/platform-admin') ||
-    url.pathname.startsWith('/dashboard') ||
-    url.pathname.startsWith('/builder') ||
     url.pathname.startsWith('/settings') ||
     url.pathname.startsWith('/tenant');
 

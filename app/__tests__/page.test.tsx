@@ -46,12 +46,12 @@ describe('Home Page', () => {
       auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'org@test.com' } } }) },
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      isPlatformAdmin: false,
-      organizationMembers: [{ role: 'ORGANIZER' }],
+      id: 'user-1',
+      organizationMembers: [{ role: 'ORGANIZER', organization: { slug: 'test-org' } }],
     });
 
     await Home();
-    expect(redirect).toHaveBeenCalledWith('/dashboard');
+    expect(redirect).toHaveBeenCalledWith('/tenant/test-org/dashboard');
   });
 
   it('redirects regular user to /settings', async () => {

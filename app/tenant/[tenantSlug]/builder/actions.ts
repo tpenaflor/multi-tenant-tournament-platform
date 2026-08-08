@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 import { isAiComponentEnabled } from '@/lib/featureFlags';
 
-export async function savePageLayout(components: any[], tournamentId?: string) {
+export async function savePageLayout(tenantSlug: string, components: any[], tournamentId?: string) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -14,24 +14,37 @@ export async function savePageLayout(components: any[], tournamentId?: string) {
       throw new Error('Unauthorized');
     }
 
-    // Check if the organization exists for this user
+    const org = await prisma.organization.findFirst({
+      where: {
+        OR: [
+          { slug: tenantSlug },
+          { customDomain: tenantSlug },
+          ...(tenantSlug.includes('.') ? [] : [{ customDomain: { startsWith: `${tenantSlug}.` } }]),
+        ],
+      }
+    });
+
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    // Check if the user is an organizer of THIS organization
     const dbUser = await prisma.user.findUnique({
       where: { email: user.email! },
       include: {
         organizationMembers: {
-          where: { role: 'ORGANIZER' },
-          include: { organization: true }
+          where: { 
+            organizationId: org.id,
+            role: 'ORGANIZER' 
+          },
         }
       },
     });
 
-    const activeOrgMember = dbUser?.organizationMembers?.[0];
-
-    if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
-      throw new Error('User is not assigned to an organization');
+    if (!dbUser || !dbUser.organizationMembers || dbUser.organizationMembers.length === 0) {
+      throw new Error('User is not an organizer of this organization');
     }
 
-    const org = activeOrgMember.organization;
     const slug = tournamentId || '/';
 
     // Upsert the page for this organization
@@ -64,7 +77,7 @@ export async function savePageLayout(components: any[], tournamentId?: string) {
   }
 }
 
-export async function saveTenantTheme(theme: string) {
+export async function saveTenantTheme(tenantSlug: string, theme: string) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -73,23 +86,35 @@ export async function saveTenantTheme(theme: string) {
       throw new Error('Unauthorized');
     }
 
+    const org = await prisma.organization.findFirst({
+      where: {
+        OR: [
+          { slug: tenantSlug },
+          { customDomain: tenantSlug },
+          ...(tenantSlug.includes('.') ? [] : [{ customDomain: { startsWith: `${tenantSlug}.` } }]),
+        ],
+      }
+    });
+
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
     const dbUser = await prisma.user.findUnique({
       where: { email: user.email! },
       include: {
         organizationMembers: {
-          where: { role: 'ORGANIZER' },
-          include: { organization: true }
+          where: { 
+            organizationId: org.id,
+            role: 'ORGANIZER' 
+          },
         }
       },
     });
 
-    const activeOrgMember = dbUser?.organizationMembers?.[0];
-
-    if (!dbUser || !activeOrgMember || !activeOrgMember.organization) {
-      throw new Error('User is not assigned to an organization');
+    if (!dbUser || !dbUser.organizationMembers || dbUser.organizationMembers.length === 0) {
+      throw new Error('User is not an organizer of this organization');
     }
-
-    const org = activeOrgMember.organization;
 
     await prisma.organization.update({
       where: { id: org.id },

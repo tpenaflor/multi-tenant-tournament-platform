@@ -26,7 +26,8 @@ export async function login(formData: FormData) {
     where: { email },
     include: {
       organizationMembers: {
-        where: { role: 'ORGANIZER' }
+        where: { role: 'ORGANIZER' },
+        include: { organization: true }
       }
     }
   });
@@ -36,7 +37,8 @@ export async function login(formData: FormData) {
   }
 
   if (user?.organizationMembers && user.organizationMembers.length > 0) {
-    return redirect('/dashboard');
+    const org = user.organizationMembers[0].organization;
+    return redirect(`/tenant/${org.slug}/dashboard`);
   }
 
   if (!user) {

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
 import { renderBuilderComponent, ComponentItem } from '@/components/builder/ComponentRegistry';
 import { headers } from 'next/headers';
-import TenantLoginHeader from '@/components/auth/TenantLoginHeader';
+import TenantHeader from '@/components/auth/TenantHeader';
 
 interface TenantPageProps {
   params: Promise<{
@@ -26,6 +26,14 @@ export default async function TenantPage({ params }: TenantPageProps) {
       ],
     },
   });
+
+  let themeObj: any = {};
+  if (org?.theme) {
+    try {
+      themeObj = JSON.parse(org.theme);
+    } catch (e) {}
+  }
+  const logoUrl = themeObj.logoUrl;
 
   let isOwner = false;
   
@@ -100,12 +108,12 @@ export default async function TenantPage({ params }: TenantPageProps) {
 
     return (
       <main className="min-h-screen pt-20 p-8">
-        {!user && <TenantLoginHeader tenantName={org.name} tenantSlug={tenantSlug} />}
+        <TenantHeader tenantName={org.name} tenantSlug={tenantSlug} logoUrl={logoUrl} user={user} />
         <div className="max-w-5xl mx-auto space-y-4">
           {components.map((comp) => renderBuilderComponent(comp, { tournaments, tenantName: org.name, basePath }))}
         </div>
         {isOwner && (
-          <a href="/builder" className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3 rounded-full bg-tenant-primary hover:opacity-80 text-white font-bold shadow-xl transition-transform hover:scale-105">
+          <a href={`/tenant/${tenantSlug}/builder`} className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3 rounded-full bg-tenant-primary hover:opacity-80 text-white font-bold shadow-xl transition-transform hover:scale-105">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
@@ -119,7 +127,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
   // Fallback to the default static page if no layout is found in the DB
   return (
     <main className="min-h-screen pt-20 p-8 flex flex-col items-center justify-center">
-      {!user && <TenantLoginHeader tenantName={org.name} tenantSlug={tenantSlug} />}
+      <TenantHeader tenantName={org.name} tenantSlug={tenantSlug} logoUrl={logoUrl} user={user} />
       <div className="max-w-3xl w-full text-center space-y-6 bg-tenant-bg p-10 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-sm mix-blend-screen">
         <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold tracking-wide uppercase">
           Tenant Domain Active
@@ -138,7 +146,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
         </div>
         
         {isOwner && (
-          <a href="/builder" className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3 rounded-full bg-tenant-primary hover:opacity-80 text-white font-bold shadow-xl transition-transform hover:scale-105">
+          <a href={`/tenant/${tenantSlug}/builder`} className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3 rounded-full bg-tenant-primary hover:opacity-80 text-white font-bold shadow-xl transition-transform hover:scale-105">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
