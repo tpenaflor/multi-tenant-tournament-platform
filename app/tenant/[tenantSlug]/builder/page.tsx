@@ -47,10 +47,10 @@ export default async function BuilderPage(props: {
 
   if (!dbUser || !dbUser.organizationMembers || dbUser.organizationMembers.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-tenant-bg text-tenant-text p-6">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-6">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-white">Access Denied</h1>
-          <p className="text-tenant-text/70">You must be an organizer of this organization to use the Builder.</p>
+          <p className="text-slate-400">You must be an organizer of this organization to use the Builder.</p>
         </div>
       </div>
     );
@@ -110,5 +110,23 @@ export default async function BuilderPage(props: {
     orderBy: { createdAt: 'desc' }
   });
 
-  return <BuilderClient initialComponents={initialComponents} tenantSlug={org.slug} tournamentId={tournamentId} tournamentSlug={tournamentSlug} tournaments={tournaments} initialTheme={org.theme} />;
+  const defaultThemeStyles = {
+    '--tenant-primary': '#0ea5e9',
+    '--tenant-bg': '#020617',
+    '--tenant-text': '#f8fafc',
+    '--tenant-accent': '#ec4899',
+    '--tenant-bg-alt': '#0f172a',
+    '--tenant-border': '#334155',
+    '--tenant-font-sans': 'ui-sans-serif, system-ui, sans-serif',
+    '--tenant-font-serif': 'ui-serif, Georgia, serif',
+    '--tenant-primary-rgb': '14 165 233',
+    '--tenant-bg-rgb': '2 6 23',
+    '--tenant-text-rgb': '248 250 252',
+  } as React.CSSProperties;
+
+  return (
+    <div style={defaultThemeStyles} className="bg-tenant-bg text-tenant-text">
+      <BuilderClient initialComponents={initialComponents} tenantSlug={org.slug} tournamentId={tournamentId} tournamentSlug={tournamentSlug} tournaments={tournaments} initialTheme={org.theme} />
+    </div>
+  );
 }
