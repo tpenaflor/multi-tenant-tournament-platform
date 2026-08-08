@@ -66,6 +66,20 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
 
   const showAiComponent = isAiComponentEnabled();
 
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)} ${parseInt(result[2], 16)} ${parseInt(result[3], 16)}` : null;
+  };
+
+  const dynamicThemeStyles = {
+    '--tenant-primary': theme.primaryColor || '#0ea5e9',
+    '--tenant-bg': theme.backgroundColor || '#020617',
+    '--tenant-text': theme.textColor || '#f8fafc',
+    '--tenant-primary-rgb': hexToRgb(theme.primaryColor || '#0ea5e9'),
+    '--tenant-bg-rgb': hexToRgb(theme.backgroundColor || '#020617'),
+    '--tenant-text-rgb': hexToRgb(theme.textColor || '#f8fafc'),
+  } as React.CSSProperties;
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -434,7 +448,29 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
               Live Interactive Page Canvas ({components.length} components)
             </div>
 
-            <DndContext
+            {/* Browser Wrapper */}
+            <div className="rounded-xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex flex-col">
+              {/* Browser Header */}
+              <div className="h-10 bg-slate-800 flex items-center px-4 gap-2 shrink-0 border-b border-slate-700">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-rose-500/80 border border-rose-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-amber-500/80 border border-amber-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/80 border border-emerald-500"></div>
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="bg-slate-900 text-slate-400 text-[10px] px-3 py-1 rounded-md font-mono flex items-center gap-2 border border-slate-800 shadow-inner">
+                    <span>🔒</span> {tenantSlug}.platform.com
+                  </div>
+                </div>
+                <div className="w-10"></div> {/* Spacer for symmetry */}
+              </div>
+
+              {/* Browser Content (Themed) */}
+              <div 
+                style={dynamicThemeStyles} 
+                className="bg-tenant-bg text-tenant-text relative min-h-[600px] flex flex-col p-4 sm:p-8"
+              >
+                <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
@@ -469,9 +505,11 @@ export default function BuilderClient({ initialComponents, tenantSlug, tournamen
                       </div>
                     </div>
                   </SortableItem>
-                ))}
-              </SortableContext>
-            </DndContext>
+                    ))}
+                  </SortableContext>
+                </DndContext>
+              </div>
+            </div>
           </div>
         </main>
 
